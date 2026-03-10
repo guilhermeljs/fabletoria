@@ -1,0 +1,121 @@
+.node {
+  background: #1e1e2e;
+  border: 1.5px solid #4a4a6a;
+  border-radius: 8px;
+  min-width: 200px;
+  max-width: 320px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.15s ease;
+}
+
+.node.selected {
+  border-color: #6c63ff;
+  box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.3);
+}
+
+.node.startNode {
+  border-color: #f59e0b;
+}
+
+.nodeHandle {
+  width: 8px;
+  height: 8px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #16162a;
+  border-bottom: 1px solid #4a4a6a;
+  min-height: 28px;
+  cursor: text;
+}
+
+.header:hover {
+  background: #1c1c35;
+}
+
+.titleText {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  color: #a6adc8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+.titleText.empty {
+  color: #45475a;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.titleInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 12px;
+  font-weight: 500;
+  color: #cdd6f4;
+  padding: 0;
+  width: 100%;
+}
+
+.startBadge {
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.variationBadge {
+  font-size: 10px;
+  padding: 1px 6px;
+  background: #4c1d95;
+  color: #c4b5fd;
+  border-radius: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.content {
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #cdd6f4;
+  max-height: 120px;
+  overflow: hidden;
+  cursor: text;
+}
+
+.content:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+.content:empty::before {
+  content: 'Double-click to edit...';
+  color: #45475a;
+  font-style: italic;
+}
+
+/* When content area is in edit mode, allow scrolling instead of hiding overflow */
+.contentEditing {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Neutralize the extra div.ProseMirror that Tiptap injects so it adds no box model */
+.contentEditing :global(.ProseMirror) {
+  margin: 0;
+  padding: 0;
+  outline: none;
+  min-height: 0;
+}
