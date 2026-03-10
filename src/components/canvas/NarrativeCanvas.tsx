@@ -91,6 +91,8 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
         selected: selection.some((s) => s.id === c.id),
         source: c.sourceNodeId,
         target: c.targetNodeId,
+        sourceHandle: c.sourceHandle ?? null,
+        targetHandle: 'target',
         type: 'default'
       }
     })
@@ -99,7 +101,7 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
   const onConnect = useCallback(
     (params: Connection) => {
       if (params.source && params.target) {
-        store.createConnection(params.source, params.target)
+        store.createConnection(params.source, params.target, params.sourceHandle)
       }
     },
     [store]

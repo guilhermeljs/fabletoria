@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useUIStore } from '../../stores/ui-store'
 import { useProjectStore } from '../../stores/project-store'
 import { usePlayStore } from '../../stores/play-store'
-import { isElectron } from '../../lib/platform'
+import McpButton from '../mcp/McpButton'
 
 export default function Toolbar() {
   const activeNarrativeId = useUIStore((s) => s.activeNarrativeId)
@@ -46,8 +46,7 @@ export default function Toolbar() {
           ▶ Play
         </button>
 
-        {/* Electron-only extension slot: Feature 002 renders MCP button here */}
-        {isElectron() && <div id="electron-toolbar-slot" />}
+        <McpButton />
       </div>
     </header>
   )

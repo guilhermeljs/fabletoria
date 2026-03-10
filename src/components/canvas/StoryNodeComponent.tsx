@@ -139,10 +139,10 @@ const StoryNodeComponent = memo(({ data, selected, id }: NodeProps) => {
         }}
         isConnectableStart={false}
       />
-      <Handle type="source" position={Position.Bottom} className={styles.nodeHandle}   />
-      <Handle type="source" position={Position.Top} className={styles.nodeHandle}   />
-      <Handle type="source" position={Position.Left} className={styles.nodeHandle}   />
-      <Handle type="source" position={Position.Right} className={styles.nodeHandle}   />
+      <Handle type="source" id="bottom" position={Position.Bottom} className={styles.nodeHandle} isConnectable  />
+      <Handle type="source" id="top" position={Position.Top} className={styles.nodeHandle} isConnectable   />
+      <Handle type="source" id="left" position={Position.Left} className={styles.nodeHandle} isConnectable   />
+      <Handle type="source" id="right" position={Position.Right} className={styles.nodeHandle} isConnectable   />
 
       {/* Header / Title area */}
       <div

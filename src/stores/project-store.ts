@@ -44,7 +44,7 @@ export interface ProjectState {
   setStartNode: (narrativeId: EntityId, nodeId: EntityId | null) => void
 
   // ── Connection actions ────────────────────────────────────────────────────
-  createConnection: (sourceNodeId: EntityId, targetNodeId: EntityId) => Connection | null
+  createConnection: (sourceNodeId: EntityId, targetNodeId: EntityId, sourceHandle?: string | null) => Connection | null
   deleteConnection: (id: EntityId) => void
 
   // ── Component actions ─────────────────────────────────────────────────────
@@ -258,7 +258,7 @@ export const useProjectStore = create<ProjectState>()(
 
     // ── Connection ───────────────────────────────────────────────────────
 
-    createConnection(sourceNodeId, targetNodeId) {
+    createConnection(sourceNodeId, targetNodeId, sourceHandle) {
       const { nodes } = get()
       const sourceNode = nodes[sourceNodeId]
       const targetNode = nodes[targetNodeId]
@@ -270,6 +270,7 @@ export const useProjectStore = create<ProjectState>()(
         narrativeId: sourceNode.narrativeId,
         sourceNodeId,
         targetNodeId,
+        sourceHandle: sourceHandle ?? null,
         createdAt: now(),
         updatedAt: now()
       }

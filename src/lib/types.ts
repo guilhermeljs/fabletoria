@@ -34,6 +34,8 @@ export interface Connection {
   narrativeId: EntityId
   sourceNodeId: EntityId
   targetNodeId: EntityId
+  sourceHandle?: string | null
+  label?: string | null  // Choice label for Play Mode (Feature 002)
   createdAt: number
   updatedAt: number
 }

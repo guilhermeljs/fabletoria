@@ -1,6 +1,9 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { startMcpServer, stopMcpServer, getMcpStatus, stopOnQuit } from './mcp/server'
+import "./mcp/registry"
+import "./mcp/ipc-bridge"
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -10,12 +13,15 @@ function createWindow(): void {
     autoHideMenuBar: true,
     title: 'NarrativeFlow',
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, '../preload/preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false
+      sandbox: false,
+      devTools: true
     }
   })
+
+  mainWindow.webContents.openDevTools()
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -43,11 +49,28 @@ app.whenReady().then(() => {
   // Feature 002 will register MCP-related IPC handlers here
   ipcMain.on('ping', () => console.log('pong'))
 
+  // MCP server IPC handlers (Feature 002)
+  ipcMain.handle('mcp:start', async () => {
+    return await startMcpServer()
+  })
+
+  ipcMain.handle('mcp:stop', async () => {
+    return await stopMcpServer()
+  })
+
+  ipcMain.handle('mcp:status', () => {
+    return getMcpStatus()
+  })
+
   createWindow()
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+})
+
+app.on('before-quit', () => {
+  stopOnQuit()
 })
 
 app.on('window-all-closed', () => {

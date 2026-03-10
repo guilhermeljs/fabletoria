@@ -8,9 +8,10 @@ export default defineConfig({
     build: {
       lib: {
         entry: resolve('electron/main.ts')
-      }
+      },
     }
   },
+  
   preload: {
     build: {
       lib: {
