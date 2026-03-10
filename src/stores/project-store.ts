@@ -45,6 +45,7 @@ export interface ProjectState {
 
   // ── Connection actions ────────────────────────────────────────────────────
   createConnection: (sourceNodeId: EntityId, targetNodeId: EntityId, sourceHandle?: string | null) => Connection | null
+  updateConnectionHandle: (id: EntityId, sourceHandle: string) => void
   deleteConnection: (id: EntityId) => void
 
   // ── Component actions ─────────────────────────────────────────────────────
@@ -277,6 +278,18 @@ export const useProjectStore = create<ProjectState>()(
       set((s) => ({ connections: { ...s.connections, [connection.id]: connection } }))
       persist(() => db.connections.put(connection))
       return connection
+    },
+
+    updateConnectionHandle(id, sourceHandle) {
+      set((s) => {
+        const conn = s.connections[id]
+        if (!conn) return s
+        const updated = { ...conn, sourceHandle, updatedAt: now() }
+        return { connections: { ...s.connections, [id]: updated } }
+      })
+      persist(async () => {
+        await db.connections.update(id, { sourceHandle, updatedAt: now() })
+      })
     },
 
     deleteConnection(id) {

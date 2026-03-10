@@ -3,6 +3,7 @@ import { useUIStore } from '../../stores/ui-store'
 import { useProjectStore } from '../../stores/project-store'
 import { usePlayStore } from '../../stores/play-store'
 import McpButton from '../mcp/McpButton'
+import OrganizeButton from './OrganizeButton'
 
 export default function Toolbar() {
   const activeNarrativeId = useUIStore((s) => s.activeNarrativeId)
@@ -38,12 +39,14 @@ export default function Toolbar() {
           </span>
         )}
 
+        <OrganizeButton />
+
         <button
           onClick={handlePlay}
           disabled={!activeNarrativeId}
           className="px-4 py-1.5 text-sm font-medium bg-violet-600 text-white rounded-lg hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          ▶ Play
+          Play
         </button>
 
         <McpButton />
