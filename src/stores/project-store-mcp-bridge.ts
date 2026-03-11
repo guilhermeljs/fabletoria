@@ -126,6 +126,19 @@ export function initMcpBridge(): (() => void) | undefined {
           break
         }
 
+        case 'node:updateTitle': {
+          const nodeId = payload['nodeId'] as string
+          const title = payload['title'] as string
+          const node = store.nodes[nodeId]
+          if (!node) {
+            reply(replyChannel, err('NOT_FOUND', `Node '${nodeId}' not found`))
+            break
+          }
+          store.updateNodeTitle(nodeId, title)
+          reply(replyChannel, ok({ nodeId, title }))
+          break
+        }
+
         case 'node:delete': {
           const nodeId = payload['nodeId'] as string
           if (!store.nodes[nodeId]) {
@@ -232,6 +245,43 @@ export function initMcpBridge(): (() => void) | undefined {
           break
         }
 
+        case 'variation:edit': {
+          const { variationId, name, values } = payload as {
+            variationId: string
+            name?: string
+            values?: Record<string, string | number>
+          }
+          const variation = store.variations[variationId]
+          if (!variation) {
+            reply(replyChannel, err('NOT_FOUND', `Variation '${variationId}' not found`))
+            break
+          }
+          // rename if needed
+          if (name && name !== variation.name) {
+            const renameResult = store.renameVariation(variationId, name)
+            if ('error' in renameResult) {
+              reply(replyChannel, err('DUPLICATE_NAME', renameResult.error))
+              break
+            }
+          }
+          if (values) {
+            store.updateVariationValues(variationId, values)
+          }
+          reply(replyChannel, ok({ variationId, name: name ?? variation.name, values: values ?? variation.values }))
+          break
+        }
+
+        case 'variation:delete': {
+          const variationId = payload['variationId'] as string
+          if (!store.variations[variationId]) {
+            reply(replyChannel, err('NOT_FOUND', `Variation '${variationId}' not found`))
+            break
+          }
+          store.deleteVariation(variationId)
+          reply(replyChannel, ok({ deletedVariationId: variationId }))
+          break
+        }
+
         case 'node:editContent': {
           const nodeId = payload['nodeId'] as string
           const content = payload['content'] as Record<string, unknown>
@@ -241,6 +291,77 @@ export function initMcpBridge(): (() => void) | undefined {
           }
           store.updateNodeContent(nodeId, JSON.stringify(content))
           reply(replyChannel, ok({ nodeId }))
+          break
+        }
+
+        // ── Query endpoints for AI / analysis ──────────────────────────────────
+        case 'query:listNarratives': {
+          const narrs = Object.values(store.narratives)
+          reply(replyChannel, ok({ narratives: narrs }))
+          break
+        }
+
+        case 'query:listNodes': {
+          const narrativeId = payload['narrativeId'] as string | undefined
+          const nodes = Object.values(store.nodes).filter((n) => !narrativeId || n?.narrativeId === narrativeId)
+          reply(replyChannel, ok({ nodes }))
+          break
+        }
+
+        case 'query:listEdges': {
+          const narrativeId = payload['narrativeId'] as string | undefined
+          const edges = Object.values(store.connections).filter((c) => !narrativeId || c?.narrativeId === narrativeId)
+          reply(replyChannel, ok({ edges }))
+          break
+        }
+
+        case 'query:listComponents': {
+          const comps = Object.values(store.components)
+          reply(replyChannel, ok({ components: comps }))
+          break
+        }
+
+        case 'query:listVariations': {
+          const componentId = payload['componentId'] as string | undefined
+          const variations = Object.values(store.variations).filter((v) => !componentId || v?.componentId === componentId)
+          reply(replyChannel, ok({ variations }))
+          break
+        }
+
+        case 'query:readNarrative': {
+          const narrativeId = payload['narrativeId'] as string
+          if (!store.narratives[narrativeId]) {
+            reply(replyChannel, err('NOT_FOUND', `Narrative '${narrativeId}' not found`))
+            break
+          }
+          const nodes = Object.values(store.nodes).filter((n) => n?.narrativeId === narrativeId)
+          const edges = Object.values(store.connections).filter((c) => c?.narrativeId === narrativeId)
+
+          // build a simple linear traversal starting from startNodeId if present
+          const linear: Array<any> = []
+          const visited = new Set<string>()
+          const start = store.narratives[narrativeId].startNodeId
+          const queue: string[] = start ? [start] : nodes.map((n) => n.id)
+
+          while (queue.length) {
+            const nid = queue.shift()!
+            if (visited.has(nid)) continue
+            visited.add(nid)
+            const node = store.nodes[nid]
+            if (!node) continue
+            const outgoing = edges.filter((e) => e.sourceNodeId === nid)
+            linear.push({
+              nodeId: nid,
+              title: node.title,
+              content: node.content,
+              choices: outgoing.map((o) => ({ targetNodeId: o.targetNodeId, label: o.label ?? null }))
+            })
+            for (const o of outgoing) {
+              if (!visited.has(o.targetNodeId)) queue.push(o.targetNodeId)
+            }
+          }
+
+          reply(replyChannel, ok({ narrativeId, linear }))
           break
         }
 

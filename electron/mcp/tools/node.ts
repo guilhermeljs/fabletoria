@@ -20,6 +20,21 @@ registerTool({
 })
 
 registerTool({
+  name: 'node.content.edit',
+  description: "Replaces the Tiptap JSON content of a story node. Accepts Tiptap JSON (editor.getJSON() format). Any Tiptap extension (images, embeds, etc.) is automatically supported. Supports {{variationName.fieldName}} interpolation syntax.",
+  schema: {
+    nodeId: z.string().describe('ID of the node to update.'),
+    content: z.record(z.string(), z.unknown())
+      .describe('New content as Tiptap JSON (editor.getJSON() format). Supports {{variationName.fieldName}} interpolation. Unresolved references are accepted.')
+  },
+  handler: async ({ nodeId, content }) => {
+    const result = await ipcBridge.invoke('node:editContent', { nodeId, content })
+    return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] }
+  }
+})
+
+
+registerTool({
   name: 'node.create-from-variation',
   description: 'Creates a variation-backed story node in a narrative (equivalent to dragging a variation onto the canvas). Returns the node ID.',
   schema: {
@@ -67,6 +82,19 @@ registerTool({
   },
   handler: async ({ nodeId }) => {
     const result = await ipcBridge.invoke('node:delete', { nodeId })
+    return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] }
+  }
+})
+
+registerTool({
+  name: 'node.title.edit',
+  description: "Updates the title of a given story node. Useful when only the title needs changing.",
+  schema: {
+    nodeId: z.string().describe('ID of the node to modify.'),
+    title: z.string().describe('New title text for the node.')
+  },
+  handler: async ({ nodeId, title }) => {
+    const result = await ipcBridge.invoke('node:updateTitle', { nodeId, title })
     return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] }
   }
 })

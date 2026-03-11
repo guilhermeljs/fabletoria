@@ -12,7 +12,7 @@ import './tools/node'
 import './tools/edge'
 import './tools/component'
 import './tools/variation'
-import './tools/content'
+import './tools/query'
 import cors from 'cors'
 
 const PORT = 7700
