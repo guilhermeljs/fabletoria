@@ -56,33 +56,52 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
 
   const narrative = narratives[narrativeId]
 
+  const prevNodesRef = useRef<Map<string, { source: any; rfNode: Node }>>(
+    new Map()
+  );
   // Build React Flow nodes from store (source of truth)
-  const storeNodes = useMemo<Node[]>(() =>
-    Object.values(nodes)
-      .filter((n) => n?.narrativeId === narrativeId)
-      .map((n) => {
-        if (!n) return null
-        const variation = n.variationId ? variations[n.variationId] : undefined
-        return {
-          id: n.id,
-          type: 'storyNode',
-          position: n.position,
-          width: n.width,
-          height: n.height,
-          selected: selection.some((s) => s.id === n.id),
-          data: {
-            content: n.content,
-            title: n.title ?? '',
-            isStartNode: narrative?.startNodeId === n.id,
-            variationId: n.variationId ?? undefined,
-            variationName: variation?.name
-          }
-        }
-      })
-      .filter(Boolean) as Node[],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [nodes, narrativeId, variations, narrative?.startNodeId, selection]
-  )
+  const storeNodes = useMemo<Node[]>(() => {
+    const cached = prevNodesRef.current;
+    const result: Node[] = [];
+
+    for (const n of Object.values(nodes)) {
+      if (!n || n.narrativeId !== narrativeId) continue;
+
+      const variation = n.variationId ? variations[n.variationId] : undefined;
+      const prev = cached.get(n.id);
+
+      if (prev && prev.source === n) {
+        result.push(prev.rfNode);
+        continue;
+      }
+
+      const rfNode: Node = {
+        id: n.id,
+        type: 'storyNode',
+        position: n.position,
+        width: n.width || 100,
+        height: n.height || 100,
+        data: {
+          content: n.content,
+          title: n.title ?? '',
+          isStartNode: narrative?.startNodeId === n.id,
+          variationId: n.variationId ?? undefined,
+          variationName: variation?.name,
+        },
+      };
+
+      cached.set(n.id, { source: n, rfNode });
+      result.push(rfNode);
+    }
+
+    for (const id of cached.keys()) {
+      if (!nodes[id] || nodes[id].narrativeId !== narrativeId) {
+        cached.delete(id);
+      }
+    }
+
+    return result;
+  }, [nodes, narrativeId, variations, narrative?.startNodeId]);
 
   // Local display state — React Flow reads this for smooth real-time updates
   const [displayNodes, setDisplayNodes] = useState<Node[]>(storeNodes)
@@ -91,11 +110,16 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
   // but not while a drag is in progress (would snap node back to stored position)
   useEffect(() => {
     setDisplayNodes((prev) => {
-      const anyDragging = prev.some((n) => n.dragging)
-      if (anyDragging) return prev
-      return storeNodes
-    })
-  }, [storeNodes])
+      if (prev.some((n) => n.dragging)) return prev;
+
+      const selectionMap = new Map(prev.map((n) => [n.id, n.selected]));
+
+      return storeNodes.map((n) => ({
+        ...n,
+        selected: selectionMap.get(n.id) ?? false,
+      }));
+    });
+  }, [storeNodes]);
 
   // Build React Flow edges — no `selected` field
   const rfNodes = displayNodes
@@ -106,7 +130,7 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
       if (!c) return null
       return {
         id: c.id,
-        selected: selection.some((s) => s.id === c.id),
+        selected: selection.some(n=>n.id===c.id),
         source: c.sourceNodeId,
         target: c.targetNodeId,
         sourceHandle: c.sourceHandle ?? null,

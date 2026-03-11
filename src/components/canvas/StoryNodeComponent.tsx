@@ -135,15 +135,22 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
 
   // Focus input when title editing starts
   useEffect(() => {
-    if (editingTitle && titleInputRef.current) {
-      titleInputRef.current.focus()
-      titleInputRef.current.select()
-    }
+    const input = titleInputRef.current
+    if (!editingTitle || !input) return
+
+    input.focus()
+
+    requestAnimationFrame(() => {
+      const len = input.value.length
+      input.setSelectionRange(len, len)
+    })
   }, [editingTitle])
 
   const commitTitle = useCallback(() => {
-    updateNodeTitle(id as string, titleValue)
-    setEditingTitle(false)
+    if(titleValue !== nodeData.title) {
+      updateNodeTitle(id as string, titleValue)
+      setEditingTitle(false)
+    }
   }, [id, titleValue, updateNodeTitle])
 
   const variation = nodeData.variationId ? variations[nodeData.variationId] : undefined
@@ -206,9 +213,17 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
       <div
         className={styles.header}
         onDoubleClick={(_e) => {
-          if (!variation) setEditingTitle(true)
+          if (!variation && !editingTitle) setEditingTitle(true)
         }}
-        onMouseDown={(e) => { if (editingTitle) e.stopPropagation() }}
+        onPointerDown={(e) => { 
+          if(editingContent && !variation) {
+            (document.activeElement as HTMLElement | null)?.blur()
+            setEditingContent(false)
+            setEditingTitle(true);
+          }
+          e.stopPropagation();
+      }}
+        onMouseDown={(e)=>e.stopPropagation()}
       >
         {nodeData.isStartNode && <span className={styles.startBadge} title="Start node">★</span>}
         {nodeData.variationName && (
@@ -225,7 +240,7 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
               if (e.key === 'Enter') commitTitle()
               if (e.key === 'Escape') { setTitleValue(nodeData.title ?? ''); setEditingTitle(false) }
             }}
-            onMouseDown={(e) => e.stopPropagation()}
+            onMouseDown={(e)=>e.stopPropagation()}
             placeholder="Title..."
           />
         ) : (
@@ -256,8 +271,14 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
           }}
           className={`${styles.content} narrative-content`}
           dangerouslySetInnerHTML={{ __html: html }}
-          onDoubleClick={(_e) => { setEditingContent(true) }}
-          onMouseDown={(e) => e.stopPropagation()}
+          onDoubleClick={(_e) => { if(!editingContent) setEditingContent(true) }}
+          onPointerDown={(_e) => {
+            if(editingTitle) {
+              commitTitle();
+              setEditingTitle(false);
+              setEditingContent(true);
+            }
+          }}
         />
       )}
 
