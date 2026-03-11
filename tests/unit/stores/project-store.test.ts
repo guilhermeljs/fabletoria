@@ -116,15 +116,22 @@ describe('Node actions', () => {
 })
 
 describe('Connection actions', () => {
-  it('creates a connection between nodes in same narrative', () => {
+  it('creates a connection between nodes in same narrative and records handle ids', () => {
     const n = useProjectStore.getState().createNarrative('Test')
     const node1 = useProjectStore.getState().createNode(n.id)
     const node2 = useProjectStore.getState().createNode(n.id)
-    const connection = useProjectStore.getState().createConnection(node1.id, node2.id, 'Go right')
+    // supply handles for both ends
+    const connection = useProjectStore.getState().createConnection(
+      node1.id,
+      node2.id,
+      'bottom',
+      'top'
+    )
     expect(connection).not.toBeNull()
     expect(connection?.sourceNodeId).toBe(node1.id)
     expect(connection?.targetNodeId).toBe(node2.id)
-    expect(connection?.label).toBe('Go right')
+    expect(connection?.sourceHandle).toBe('bottom')
+    expect(connection?.targetHandle).toBe('top')
   })
 
   it('rejects connection between nodes in different narratives', () => {
@@ -136,13 +143,17 @@ describe('Connection actions', () => {
     expect(result).toBeNull()
   })
 
-  it('updates connection label', () => {
+  it('updates connection handles', () => {
     const n = useProjectStore.getState().createNarrative('Test')
     const node1 = useProjectStore.getState().createNode(n.id)
     const node2 = useProjectStore.getState().createNode(n.id)
     const conn = useProjectStore.getState().createConnection(node1.id, node2.id)!
-    useProjectStore.getState().updateConnectionLabel(conn.id, 'Updated')
-    expect(useProjectStore.getState().connections[conn.id]?.label).toBe('Updated')
+    // initially handles should be null
+    expect(useProjectStore.getState().connections[conn.id]?.sourceHandle).toBeNull()
+    expect(useProjectStore.getState().connections[conn.id]?.targetHandle).toBeNull()
+    useProjectStore.getState().updateConnectionHandle(conn.id, 'left', 'right')
+    expect(useProjectStore.getState().connections[conn.id]?.sourceHandle).toBe('left')
+    expect(useProjectStore.getState().connections[conn.id]?.targetHandle).toBe('right')
   })
 
   it('deletes a connection', () => {

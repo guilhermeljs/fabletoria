@@ -24,8 +24,8 @@ function buildGraph() {
   const start = useProjectStore.getState().createNode(narrative.id)
   const nodeA = useProjectStore.getState().createNode(narrative.id)
   const nodeB = useProjectStore.getState().createNode(narrative.id)
-  const connA = useProjectStore.getState().createConnection(start.id, nodeA.id, 'Go A')!
-  const connB = useProjectStore.getState().createConnection(start.id, nodeB.id, 'Go B')!
+  const connA = useProjectStore.getState().createConnection(start.id, nodeA.id, 'right', 'left')!
+  const connB = useProjectStore.getState().createConnection(start.id, nodeB.id, 'right', 'left')!
   useProjectStore.getState().setStartNode(narrative.id, start.id)
   return { narrative, start, nodeA, nodeB, connA, connB }
 }

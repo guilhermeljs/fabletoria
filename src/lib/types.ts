@@ -36,7 +36,10 @@ export interface Connection {
   narrativeId: EntityId
   sourceNodeId: EntityId
   targetNodeId: EntityId
+  /** Handle id used on the source node when the edge was created */
   sourceHandle?: string | null
+  /** Handle id used on the target node when the edge was created */
+  targetHandle?: string | null
   label?: string | null  // Choice label for Play Mode (Feature 002)
   createdAt: number
   updatedAt: number

@@ -16,6 +16,7 @@ import type {
   ComponentMap,
   VariationMap
 } from '../lib/types'
+import { InversePosition } from '@/lib/inverse'
 
 // ── State shape ──────────────────────────────────────────────────────────────
 
@@ -45,8 +46,21 @@ export interface ProjectState {
   setStartNode: (narrativeId: EntityId, nodeId: EntityId | null) => void
 
   // ── Connection actions ────────────────────────────────────────────────────
-  createConnection: (sourceNodeId: EntityId, targetNodeId: EntityId, sourceHandle?: string | null) => Connection | null
-  updateConnectionHandle: (id: EntityId, sourceHandle: string) => void
+  createConnection: (
+    sourceNodeId: EntityId,
+    targetNodeId: EntityId,
+    sourceHandle?: string | null,
+    targetHandle?: string | null
+  ) => Connection | null
+  /**
+   * Update the handle IDs for an existing connection. Passing `undefined` for
+   * a handle leaves it unchanged.
+   */
+  updateConnectionHandle: (
+    id: EntityId,
+    sourceHandle: string | null,
+    targetHandle?: string | null
+  ) => void
   deleteConnection: (id: EntityId) => void
 
   // ── Component actions ─────────────────────────────────────────────────────
@@ -274,7 +288,7 @@ export const useProjectStore = create<ProjectState>()(
 
     // ── Connection ───────────────────────────────────────────────────────
 
-    createConnection(sourceNodeId, targetNodeId, sourceHandle) {
+    createConnection(sourceNodeId, targetNodeId, sourceHandle, targetHandle) {
       const { nodes } = get()
       const sourceNode = nodes[sourceNodeId]
       const targetNode = nodes[targetNodeId]
@@ -287,6 +301,7 @@ export const useProjectStore = create<ProjectState>()(
         sourceNodeId,
         targetNodeId,
         sourceHandle: sourceHandle ?? null,
+        targetHandle: targetHandle ?? (sourceHandle ? InversePosition(sourceHandle) : null),
         createdAt: now(),
         updatedAt: now()
       }
@@ -295,15 +310,22 @@ export const useProjectStore = create<ProjectState>()(
       return connection
     },
 
-    updateConnectionHandle(id, sourceHandle) {
+    updateConnectionHandle(id, sourceHandle, targetHandle) {
       set((s) => {
         const conn = s.connections[id]
         if (!conn) return s
-        const updated = { ...conn, sourceHandle, updatedAt: now() }
+        const updated: Connection = {
+          ...conn,
+          sourceHandle,
+          updatedAt: now(),
+          ...(targetHandle !== undefined ? { targetHandle } : {})
+        }
         return { connections: { ...s.connections, [id]: updated } }
       })
       persist(async () => {
-        await db.connections.update(id, { sourceHandle, updatedAt: now() })
+        const updateObj: any = { sourceHandle, updatedAt: now() }
+        if (targetHandle !== undefined) updateObj.targetHandle = targetHandle
+        await db.connections.update(id, updateObj)
       })
     },
 

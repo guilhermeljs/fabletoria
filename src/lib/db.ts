@@ -26,6 +26,14 @@ export class NarrativeFlowDB extends Dexie {
       variations: '++id, componentId, name',
       assets: '++id, folder, type, sourceType'
     })
+    this.version(3).stores({
+      narratives: '++id, updatedAt',
+      nodes: '++id, narrativeId',
+      connections: '++id, narrativeId, [narrativeId+sourceNodeId]',
+      components: '++id',
+      variations: '++id, componentId, name',
+      assets: '++id, folder, type, sourceType'
+    })
   }
 }
 

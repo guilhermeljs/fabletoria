@@ -185,29 +185,11 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
         maxHeight={1280}
       />) 
       }
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="target"
-        style={{
-          width: '100%',
-          height: '100%',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          borderRadius: 0,
-          background: 'transparent',
-          border: 'none',
-          transform: 'none',
-          opacity: 0,
-          pointerEvents: 'none',
-        }}
-        isConnectableStart={false}
-      />
-      <Handle type="source" id="bottom" position={Position.Bottom} className={styles.nodeHandle} isConnectable  />
-      <Handle type="source" id="top" position={Position.Top} className={styles.nodeHandle} isConnectable   />
-      <Handle type="source" id="left" position={Position.Left} className={styles.nodeHandle} isConnectable   />
-      <Handle type="source" id="right" position={Position.Right} className={styles.nodeHandle} isConnectable   />
+      {/* four directional handles: each side can act as both source and target */}
+      <Handle type="source" id="bottom" position={Position.Bottom} className={styles.nodeHandle} />
+      <Handle type="source" id="top" position={Position.Top} className={styles.nodeHandle} />
+      <Handle type="source" id="left" position={Position.Left} className={styles.nodeHandle} />
+      <Handle type="source" id="right" position={Position.Right} className={styles.nodeHandle} />
 
       {/* Header / Title area */}
       <div

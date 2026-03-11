@@ -11,7 +11,8 @@ import {
   ReactFlowProvider,
   type FinalConnectionState,
   type EdgeChange,
-  SelectionMode
+  SelectionMode,
+  ConnectionMode
 } from '@xyflow/react'
 import { useProjectStore } from '../../stores/project-store'
 import { useUIStore } from '../../stores/ui-store'
@@ -134,7 +135,7 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
         source: c.sourceNodeId,
         target: c.targetNodeId,
         sourceHandle: c.sourceHandle ?? null,
-        targetHandle: 'target',
+        targetHandle: c.targetHandle ?? null,
         type: 'default'
       }
     })
@@ -143,7 +144,12 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
   const onConnect = useCallback(
     (params: Connection) => {
       if (params.source && params.target) {
-        store.createConnection(params.source, params.target, params.sourceHandle)
+        store.createConnection(
+          params.source,
+          params.target,
+          params.sourceHandle,
+          params.targetHandle
+        )
       }
     },
     [store]
@@ -163,6 +169,7 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
           store.updateNodeSize(change.id, change.dimensions.width, change.dimensions.height)
         }
         if (change.type === 'remove') {
+          removeFromSelection(change.id)
           store.deleteNode(change.id)
         }
         if(change.type === 'select') {
@@ -181,6 +188,7 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
     (changes: EdgeChange[]) => {
       for (const change of changes) {
         if (change.type === 'remove') {
+          removeFromSelection(change.id)
           store.deleteConnection(change.id)
         }
         if(change.type === 'select') {
@@ -237,7 +245,12 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
       // (fired by the same mouseup that ends the drag) runs first.
       setTimeout(() => {
         const newNode = store.createNode(narrativeId, { position: flowPos })
-        store.createConnection(sourceNodeId, newNode.id, connectionState.fromHandle?.position)
+        store.createConnection(
+          sourceNodeId,
+          newNode.id,
+          connectionState.fromHandle?.position,
+          null
+        )
       }, 0)
     },
     [screenToFlowPosition]
@@ -288,6 +301,7 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
         edgesFocusable
         selectionMode={SelectionMode.Partial}
         panOnScroll
+        connectionMode={ConnectionMode.Loose}
         panOnDrag={false}
         snapToGrid={false}
         onDragOver={onDragOver}
