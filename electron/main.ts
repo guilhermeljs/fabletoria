@@ -16,12 +16,9 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
-      devTools: true
+      sandbox: false
     }
   })
-
-  mainWindow.webContents.openDevTools()
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()

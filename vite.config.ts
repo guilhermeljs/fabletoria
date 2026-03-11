@@ -42,7 +42,8 @@ export default defineConfig({
   },
   server: {
     allowedHosts: [
-      "teste.nodeflow.stream"
+      "teste.nodeflow.stream",
+      "narrativeflow.nodeflow.stream"
     ]
   },
   test: {

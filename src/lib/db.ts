@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import type { Narrative, StoryNode, Connection, Component, Variation } from './types'
+import type { Narrative, StoryNode, Connection, Component, Variation, Asset } from './types'
 
 export class NarrativeFlowDB extends Dexie {
   narratives!: Table<Narrative>
@@ -7,6 +7,7 @@ export class NarrativeFlowDB extends Dexie {
   connections!: Table<Connection>
   components!: Table<Component>
   variations!: Table<Variation>
+  assets!: Table<Asset>
 
   constructor() {
     super('NarrativeFlowDB')
@@ -16,6 +17,14 @@ export class NarrativeFlowDB extends Dexie {
       connections: '++id, narrativeId, [narrativeId+sourceNodeId]',
       components: '++id',
       variations: '++id, componentId, name'
+    })
+    this.version(2).stores({
+      narratives: '++id, updatedAt',
+      nodes: '++id, narrativeId',
+      connections: '++id, narrativeId, [narrativeId+sourceNodeId]',
+      components: '++id',
+      variations: '++id, componentId, name',
+      assets: '++id, folder, type, sourceType'
     })
   }
 }

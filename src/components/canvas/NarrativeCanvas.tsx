@@ -1,7 +1,8 @@
-import { useCallback, useRef, useState, useEffect } from 'react'
+import { useCallback, useRef, useState, useEffect, useMemo } from 'react'
 import {
   ReactFlow,
   Background,
+  applyNodeChanges,
   type Connection,
   type NodeChange,
   type Node,
@@ -58,29 +59,49 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
 
   const narrative = narratives[narrativeId]
 
-  // Build React Flow nodes — no `selected` field: ReactFlow manages selection internally
-  const rfNodes: Node[] = Object.values(nodes)
-    .filter((n) => n?.narrativeId === narrativeId)
-    .map((n) => {
-      if (!n) return null
-      const variation = n.variationId ? variations[n.variationId] : undefined
-      return {
-        id: n.id,
-        type: 'storyNode',
-        position: n.position,
-        selected: selection.some((s) => s.id === n.id),
-        data: {
-          content: n.content,
-          title: n.title ?? '',
-          isStartNode: narrative?.startNodeId === n.id,
-          variationId: n.variationId ?? undefined,
-          variationName: variation?.name
+  // Build React Flow nodes from store (source of truth)
+  const storeNodes = useMemo<Node[]>(() =>
+    Object.values(nodes)
+      .filter((n) => n?.narrativeId === narrativeId)
+      .map((n) => {
+        if (!n) return null
+        const variation = n.variationId ? variations[n.variationId] : undefined
+        return {
+          id: n.id,
+          type: 'storyNode',
+          position: n.position,
+          ...(n.width !== undefined ? { width: n.width } : {}),
+          ...(n.height !== undefined ? { height: n.height } : {}),
+          selected: selection.some((s) => s.id === n.id),
+          data: {
+            content: n.content,
+            title: n.title ?? '',
+            isStartNode: narrative?.startNodeId === n.id,
+            variationId: n.variationId ?? undefined,
+            variationName: variation?.name
+          }
         }
-      }
+      })
+      .filter(Boolean) as Node[],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [nodes, narrativeId, variations, narrative?.startNodeId, selection]
+  )
+
+  // Local display state — React Flow reads this for smooth real-time updates
+  const [displayNodes, setDisplayNodes] = useState<Node[]>(storeNodes)
+
+  // Sync from store when external changes arrive (Organize, MCP, content edits…)
+  // but not while a drag is in progress (would snap node back to stored position)
+  useEffect(() => {
+    setDisplayNodes((prev) => {
+      const anyDragging = prev.some((n) => n.dragging)
+      if (anyDragging) return prev
+      return storeNodes
     })
-    .filter(Boolean) as Node[]
+  }, [storeNodes])
 
   // Build React Flow edges — no `selected` field
+  const rfNodes = displayNodes
   const nodeIds = new Set(rfNodes.map((n) => n.id))
   const rfEdges: Edge[] = Object.values(connections)
     .filter((c) => c?.narrativeId === narrativeId && nodeIds.has(c.sourceNodeId) && nodeIds.has(c.targetNodeId))
@@ -109,9 +130,16 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
+      // Always apply to display state for smooth real-time rendering (drag, resize, etc.)
+      setDisplayNodes((prev) => applyNodeChanges(changes, prev))
+
+      // Selectively persist to store
       for (const change of changes) {
-        if (change.type === 'position' && change.position) {
+        if (change.type === 'position' && change.position && change.dragging === false) {
           store.updateNodePosition(change.id, change.position)
+        }
+        if (change.type === 'dimensions' && change.dimensions && change.resizing === false) {
+          store.updateNodeSize(change.id, change.dimensions.width, change.dimensions.height)
         }
         if (change.type === 'remove') {
           store.deleteNode(change.id)
@@ -163,7 +191,10 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
   const handleAddNode = useCallback(
     (clientX: number, clientY: number) => {
       const position = screenToFlowPosition({ x: clientX, y: clientY })
-      store.createNode(narrativeId, { position })
+      const nodeId = store.createNode(narrativeId, { position })
+      if(rfNodes?.length === 0) {
+        store.setStartNode(nodeId.narrativeId, nodeId.id)
+      }
       setContextMenu(null)
     },
     [store, narrativeId, screenToFlowPosition]
@@ -227,17 +258,6 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
     [store, narrativeId, screenToFlowPosition]
   )
 
-  const onSelectionChange = useCallback(
-    ({ nodes: selectedNodes, edges: selectedEdges }: OnSelectionChangeParams) => {
-      const items: SelectionItem[] = [
-        ...selectedNodes.map((n) => ({ type: 'node' as const, id: n.id })),
-        ...selectedEdges.map((e) => ({ type: 'edge' as const, id: e.id }))
-      ]
-      setSelection(items)
-    },
-    [setSelection]
-  )
-
   // Close context menu on outside click
   useEffect(() => {
     const handler = () => setContextMenu(null)
@@ -275,6 +295,12 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
       >
         <Background color="#2a2a3e" gap={20} />
       </ReactFlow>
+      
+      {rfNodes.length === 0 && rfEdges.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center text-gray-500 pointer-events-none">
+          Right-click to add the first story piece
+        </div>
+      )}
 
       {contextMenu && (
         <div

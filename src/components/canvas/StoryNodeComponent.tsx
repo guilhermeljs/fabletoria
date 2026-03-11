@@ -1,11 +1,14 @@
 import { memo, useState, useRef, useCallback, useEffect } from 'react'
-import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { Handle, NodeResizer, Position, type NodeProps } from '@xyflow/react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { generateHTML } from '@tiptap/core'
 import { VariableNode } from '../../lib/tiptap-variable-node'
+import { AssetImageNode } from '../../extensions/AssetImageNode'
+import { AssetFileNode } from '../../extensions/AssetFileNode'
 import { resolveContent, resolveTitle } from '../../lib/interpolation'
 import { useProjectStore } from '../../stores/project-store'
+import { useAssetStore } from '../../stores/asset-store'
 import styles from './StoryNodeComponent.module.css'
 
 export interface StoryNodeData {
@@ -37,7 +40,7 @@ function InlineEditor({ nodeId, initialContent, onClose }: InlineEditorProps) {
   const updateNodeContent = useProjectStore((s) => s.updateNodeContent)
 
   const editor = useEditor({
-    extensions: [StarterKit, VariableNode],
+    extensions: [StarterKit, VariableNode, AssetImageNode, AssetFileNode],
     content: parseContent(initialContent),
     autofocus: true,
   })
@@ -68,10 +71,13 @@ function InlineEditor({ nodeId, initialContent, onClose }: InlineEditorProps) {
 
 // ── Main node component ───────────────────────────────────────────────────────
 
+const EXTENSIONS = [StarterKit, VariableNode, AssetImageNode, AssetFileNode]
+
 const StoryNodeComponent = memo(({ data, selected, id }: NodeProps) => {
   const nodeData = data as StoryNodeData
   const variations = useProjectStore((s) => s.variations)
   const updateNodeTitle = useProjectStore((s) => s.updateNodeTitle)
+  const assets = useAssetStore((s) => s.assets)
 
   const [editingTitle, setEditingTitle] = useState(false)
   const [editingContent, setEditingContent] = useState(false)
@@ -102,10 +108,10 @@ const StoryNodeComponent = memo(({ data, selected, id }: NodeProps) => {
   let html = ''
   try {
     const parsed = parseContent(nodeData.content)
-    const { html: resolved } = resolveContent(parsed, variations, variation?.values)
+    const { html: resolved } = resolveContent(parsed, variations, variation?.values, assets)
     html = resolved
   } catch {
-    html = generateHTML(parseContent(nodeData.content), [StarterKit])
+    html = generateHTML(parseContent(nodeData.content), EXTENSIONS)
   }
 
   const displayTitle = resolveTitle(nodeData.title ?? '', variation?.values)
@@ -120,6 +126,14 @@ const StoryNodeComponent = memo(({ data, selected, id }: NodeProps) => {
 
   return (
     <div className={className}>
+      { selected && (
+      <NodeResizer
+        minWidth={100}
+        minHeight={40}
+        maxWidth={1280}
+        maxHeight={1280}
+      />) 
+      }
       <Handle
         type="target"
         position={Position.Top}

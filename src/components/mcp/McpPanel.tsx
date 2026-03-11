@@ -28,6 +28,12 @@ export default function McpPanel({ onClose }: Props) {
     if (url) await navigator.clipboard.writeText(url)
   }
 
+
+  async function copyText(text) {
+    await navigator.clipboard.writeText(text)
+  }
+
+
   return (
     <div className="absolute top-full right-0 mt-2 w-80 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 p-4 flex flex-col gap-3">
       {/* Header */}
@@ -68,7 +74,21 @@ export default function McpPanel({ onClose }: Props) {
           <div className="flex items-center gap-2 bg-zinc-800 rounded-lg px-3 py-2">
             <code className="text-xs text-zinc-200 flex-1 truncate">claude mcp add narrativeflow --transport sse --scope user http://localhost:7700/sse</code>
             <button
-              onClick={copyUrl}
+              onClick={() => copyText('claude mcp add narrativeflow --transport sse --scope user http://localhost:7700/sse')}
+              className="text-xs text-zinc-400 hover:text-zinc-200 shrink-0"
+              title="Copy command"
+            >
+              Copy
+            </button>
+          </div>
+
+          <p className="text-xs text-zinc-500 mt-2">
+            Paste this command to use in Gemini
+          </p>
+          <div className="flex items-center gap-2 bg-zinc-800 rounded-lg px-3 py-2">
+            <code className="text-xs text-zinc-200 flex-1 truncate">gemini mcp add --transport sse narrativeflow http://localhost:7700/sse</code>
+            <button
+              onClick={() => copyText('gemini mcp add --transport sse narrativeflow http://localhost:7700/sse')}
               className="text-xs text-zinc-400 hover:text-zinc-200 shrink-0"
               title="Copy command"
             >

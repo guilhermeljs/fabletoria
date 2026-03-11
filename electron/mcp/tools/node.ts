@@ -10,10 +10,11 @@ registerTool({
   description: 'Adds a new generic story node to a narrative. Returns the node ID.',
   schema: {
     narrativeId: z.string().describe('ID of the narrative to add the node to.'),
+    title: z.string().describe('The title for the node. In Play Mode, when a player reaches a node with choices, each outgoing edge is shown as a button labelled with the target node\'s title.'),
     content: tiptapContent
   },
-  handler: async ({ narrativeId, content }) => {
-    const result = await ipcBridge.invoke('node:create', { narrativeId, content: content ?? null })
+  handler: async ({ narrativeId, title, content }) => {
+    const result = await ipcBridge.invoke('node:create', { narrativeId, title: title ?? null, content: content ?? null })
     return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] }
   }
 })
@@ -24,10 +25,11 @@ registerTool({
   schema: {
     narrativeId: z.string().describe('ID of the narrative to add the node to.'),
     variationId: z.string().describe('ID of the variation to back this node.'),
+    title: z.string().optional().nullable().describe('Optional title for the node. In Play Mode, when a player reaches a node with choices, each outgoing edge is shown as a button labelled with the target node\'s title. If omitted, falls back to the variation\'s default title.'),
     content: tiptapContent
   },
-  handler: async ({ narrativeId, variationId, content }) => {
-    const result = await ipcBridge.invoke('node:createFromVariation', { narrativeId, variationId, content: content ?? null })
+  handler: async ({ narrativeId, variationId, title, content }) => {
+    const result = await ipcBridge.invoke('node:createFromVariation', { narrativeId, variationId, title: title ?? null, content: content ?? null })
     return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] }
   }
 })

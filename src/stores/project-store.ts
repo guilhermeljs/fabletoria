@@ -40,6 +40,7 @@ export interface ProjectState {
   updateNodeContent: (id: EntityId, content: string) => void
   updateNodeTitle: (id: EntityId, title: string) => void
   updateNodePosition: (id: EntityId, position: { x: number; y: number }) => void
+  updateNodeSize: (id: EntityId, width: number, height: number) => void
   deleteNode: (id: EntityId) => void
   setStartNode: (narrativeId: EntityId, nodeId: EntityId | null) => void
 
@@ -202,6 +203,18 @@ export const useProjectStore = create<ProjectState>()(
       })
       persist(async () => {
         await db.nodes.update(id, { position, updatedAt: ts })
+      })
+    },
+
+    updateNodeSize(id, width, height) {
+      const ts = now()
+      set((s) => {
+        const node = s.nodes[id]
+        if (!node) return s
+        return { nodes: { ...s.nodes, [id]: { ...node, width, height, updatedAt: ts } } }
+      })
+      persist(async () => {
+        await db.nodes.update(id, { width, height, updatedAt: ts })
       })
     },
 

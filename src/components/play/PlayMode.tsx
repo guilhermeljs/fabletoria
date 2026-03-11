@@ -1,5 +1,6 @@
 import { usePlayStore } from '../../stores/play-store'
 import { useProjectStore } from '../../stores/project-store'
+import { useAssetStore } from '../../stores/asset-store'
 import { resolveContent, resolveTitle } from '../../lib/interpolation'
 
 export default function PlayMode() {
@@ -12,6 +13,7 @@ export default function PlayMode() {
   const nodes = useProjectStore((s) => s.nodes)
   const connections = useProjectStore((s) => s.connections)
   const variations = useProjectStore((s) => s.variations)
+  const assets = useAssetStore((s) => s.assets)
 
   if (!isActive) return null
 
@@ -23,7 +25,7 @@ export default function PlayMode() {
   if (currentNode) {
     try {
       const parsed = JSON.parse(currentNode.content) as object
-      const { html: resolved } = resolveContent(parsed, variations, currentVariation?.values)
+      const { html: resolved } = resolveContent(parsed, variations, currentVariation?.values, assets)
       html = resolved
     } catch {
       html = '<p>Unable to render content.</p>'

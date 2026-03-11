@@ -1,6 +1,10 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { VariableNode } from '../../lib/tiptap-variable-node'
+import { AssetImageNode } from '../../extensions/AssetImageNode'
+import { AssetFileNode } from '../../extensions/AssetFileNode'
+import { useUIStore } from '../../stores/ui-store'
+import type { Asset } from '../../lib/types'
 
 interface TiptapEditorProps {
   value: string
@@ -10,8 +14,10 @@ interface TiptapEditorProps {
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 export default function TiptapEditor({ value, onChange }: TiptapEditorProps) {
+  const openAssetManager = useUIStore((s) => s.openAssetManager)
+
   const editor = useEditor({
-    extensions: [StarterKit, VariableNode],
+    extensions: [StarterKit, VariableNode, AssetImageNode, AssetFileNode],
     content: value ? JSON.parse(value) : undefined,
     onUpdate: ({ editor }) => {
       if (debounceTimer) clearTimeout(debounceTimer)
@@ -20,6 +26,21 @@ export default function TiptapEditor({ value, onChange }: TiptapEditorProps) {
       }, 300)
     }
   })
+
+  const handleAssetSelect = (asset: Asset) => {
+    if (!editor) return
+    if (asset.type === 'image') {
+      editor.chain().focus().insertContent({
+        type: 'assetImage',
+        attrs: { assetId: asset.id, width: '100%', height: null, marginTop: 0, marginRight: 0, marginBottom: 16, marginLeft: 0 }
+      }).run()
+    } else {
+      editor.chain().focus().insertContent({
+        type: 'assetFile',
+        attrs: { assetId: asset.id, label: asset.name }
+      }).run()
+    }
+  }
 
   return (
     <div
@@ -69,6 +90,17 @@ export default function TiptapEditor({ value, onChange }: TiptapEditorProps) {
           }`}
         >
           ≡
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault()
+            openAssetManager('select', handleAssetSelect)
+          }}
+          className="px-2 py-1 text-xs rounded border bg-transparent border-zinc-600 text-zinc-400 hover:border-zinc-400"
+          title="Insert asset"
+        >
+          📎
         </button>
       </div>
 

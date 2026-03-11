@@ -3,11 +3,13 @@ import { db } from './lib/db'
 import { useProjectStore } from './stores/project-store'
 import { useUIStore, ACTIVE_NARRATIVE_STORAGE_KEY } from './stores/ui-store'
 import { usePlayStore } from './stores/play-store'
+import { useAssetStore } from './stores/asset-store'
 import Toolbar from './components/toolbar/Toolbar'
 import ExplorerSidebar from './components/explorer/ExplorerSidebar'
 import NarrativeCanvas from './components/canvas/NarrativeCanvas'
 import InspectorPanel from './components/inspector/InspectorPanel'
 import PlayMode from './components/play/PlayMode'
+import AssetManagerModal from './components/asset-manager/AssetManagerModal'
 
 export default function App() {
   const isHydrated = useRef(false)
@@ -16,6 +18,10 @@ export default function App() {
   const inspectorOpen = useUIStore((s) => s.inspectorOpen)
   const toggleInspector = useUIStore((s) => s.toggleInspector)
   const isPlayActive = usePlayStore((s) => s.isActive)
+  const assetManagerOpen = useUIStore((s) => s.assetManagerOpen)
+  const assetManagerMode = useUIStore((s) => s.assetManagerMode)
+  const assetManagerInsertCallback = useUIStore((s) => s.assetManagerInsertCallback)
+  const closeAssetManager = useUIStore((s) => s.closeAssetManager)
   const [storageWarning, setStorageWarning] = useState(false)
 
   // Hydrate stores from Dexie on app mount
@@ -28,13 +34,15 @@ export default function App() {
       db.nodes.toArray(),
       db.connections.toArray(),
       db.components.toArray(),
-      db.variations.toArray()
-    ]).then(([narratives, nodes, connections, components, variations]) => {
+      db.variations.toArray(),
+      db.assets.toArray()
+    ]).then(([narratives, nodes, connections, components, variations, assets]) => {
       const narrativeMap = Object.fromEntries(narratives.map((n) => [n.id, n]))
       const nodeMap = Object.fromEntries(nodes.map((n) => [n.id, n]))
       const connectionMap = Object.fromEntries(connections.map((c) => [c.id, c]))
       const componentMap = Object.fromEntries(components.map((c) => [c.id, c]))
       const variationMap = Object.fromEntries(variations.map((v) => [v.id, v]))
+      const assetMap = Object.fromEntries(assets.map((a) => [a.id, a]))
 
       useProjectStore.setState({
         narratives: narrativeMap,
@@ -43,6 +51,7 @@ export default function App() {
         components: componentMap,
         variations: variationMap
       })
+      useAssetStore.setState({ assets: assetMap })
 
       // Ensure at least one narrative exists
       const store = useProjectStore.getState()
@@ -114,7 +123,7 @@ export default function App() {
 
       <div className="flex flex-1 overflow-hidden relative">
         <ExplorerSidebar />
-
+        
         <main className="flex-1 relative overflow-hidden">
           {activeNarrativeId ? (
             <NarrativeCanvas key={activeNarrativeId} narrativeId={activeNarrativeId} />
@@ -153,6 +162,14 @@ export default function App() {
       </div>
 
       {isPlayActive && <PlayMode />}
+
+      {assetManagerOpen && (
+        <AssetManagerModal
+          mode={assetManagerMode}
+          onClose={closeAssetManager}
+          {...(assetManagerInsertCallback ? { onSelect: assetManagerInsertCallback } : {})}
+        />
+      )}
     </div>
   )
 }

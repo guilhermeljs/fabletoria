@@ -54,12 +54,16 @@ export function initMcpBridge(): (() => void) | undefined {
 
         case 'node:create': {
           const narrativeId = payload['narrativeId'] as string
+          const title = payload['title'] as string | null | undefined
           const contentRaw = payload['content'] as Record<string, unknown> | null | undefined
           if (!store.narratives[narrativeId]) {
             reply(replyChannel, err('NOT_FOUND', `Narrative '${narrativeId}' not found`))
             break
           }
-          const nodeOpts = contentRaw ? { content: JSON.stringify(contentRaw) } : {}
+          const nodeOpts = {
+            ...(title ? { title } : {}),
+            ...(contentRaw ? { content: JSON.stringify(contentRaw) } : {})
+          }
           const node = store.createNode(narrativeId, nodeOpts)
           reply(replyChannel, ok({ nodeId: node.id, narrativeId: node.narrativeId }))
           break
@@ -68,6 +72,7 @@ export function initMcpBridge(): (() => void) | undefined {
         case 'node:createFromVariation': {
           const narrativeId = payload['narrativeId'] as string
           const variationId = payload['variationId'] as string
+          const title = payload['title'] as string | null | undefined
           const contentRaw = payload['content'] as Record<string, unknown> | null | undefined
           if (!store.narratives[narrativeId]) {
             reply(replyChannel, err('NOT_FOUND', `Narrative '${narrativeId}' not found`))
@@ -77,9 +82,11 @@ export function initMcpBridge(): (() => void) | undefined {
             reply(replyChannel, err('NOT_FOUND', `Variation '${variationId}' not found`))
             break
           }
-          const nodeOpts = contentRaw
-            ? { variationId, content: JSON.stringify(contentRaw) }
-            : { variationId }
+          const nodeOpts = {
+            variationId,
+            ...(title ? { title } : {}),
+            ...(contentRaw ? { content: JSON.stringify(contentRaw) } : {})
+          }
           const node = store.createNode(narrativeId, nodeOpts)
           reply(replyChannel, ok({ nodeId: node.id, narrativeId: node.narrativeId, variationId }))
           break

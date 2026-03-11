@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { EntityId } from '../lib/types'
+import type { EntityId, Asset } from '../lib/types'
 
 const ACTIVE_NARRATIVE_KEY = 'narrativeflow:activeNarrativeId'
 
@@ -18,6 +18,12 @@ interface UIState {
   singleSelectedEdgeId: EntityId | null
   singleSelectedVariationId: EntityId | null
 
+  // Asset Manager
+  assetManagerOpen: boolean
+  assetManagerMode: 'browse' | 'select'
+  assetManagerInsertCallback: ((asset: Asset) => void) | null
+  activeFolder: string
+
   setActiveNarrative: (id: EntityId | null) => void
 
   setSelection: (items: SelectionItem[]) => void
@@ -32,6 +38,11 @@ interface UIState {
 
   toggleInspector: () => void
   openInspector: () => void
+
+  // Asset Manager actions
+  openAssetManager: (mode: 'browse' | 'select', callback?: (asset: Asset) => void) => void
+  closeAssetManager: () => void
+  setActiveFolder: (folder: string) => void
 }
 
 function deriveSingles(selection: SelectionItem[]) {
@@ -52,6 +63,10 @@ export const useUIStore = create<UIState>()((set) => ({
   singleSelectedNodeId: null,
   singleSelectedEdgeId: null,
   singleSelectedVariationId: null,
+  assetManagerOpen: false,
+  assetManagerMode: 'browse' as const,
+  assetManagerInsertCallback: null,
+  activeFolder: '/',
 
   setActiveNarrative(id) {
     set({ activeNarrativeId: id, selection: [], ...deriveSingles([]) })
@@ -107,6 +122,26 @@ export const useUIStore = create<UIState>()((set) => ({
 
   openInspector() {
     set({ inspectorOpen: true })
+  },
+
+  openAssetManager(mode, callback) {
+    set({
+      assetManagerOpen: true,
+      assetManagerMode: mode,
+      assetManagerInsertCallback: callback ?? null,
+      activeFolder: '/'
+    })
+  },
+
+  closeAssetManager() {
+    set({
+      assetManagerOpen: false,
+      assetManagerInsertCallback: null
+    })
+  },
+
+  setActiveFolder(folder) {
+    set({ activeFolder: folder })
   }
 }))
 

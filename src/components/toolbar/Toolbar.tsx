@@ -9,6 +9,7 @@ export default function Toolbar() {
   const activeNarrativeId = useUIStore((s) => s.activeNarrativeId)
   const narrative = useProjectStore((s) => (activeNarrativeId ? s.narratives[activeNarrativeId] : null))
   const playStart = usePlayStore((s) => s.start)
+  const openAssetManager = useUIStore((s) => s.openAssetManager)
   const [showNoStartWarning, setShowNoStartWarning] = useState(false)
 
   const handlePlay = () => {
@@ -40,6 +41,13 @@ export default function Toolbar() {
         )}
 
         <OrganizeButton />
+
+        <button
+          onClick={() => openAssetManager('browse')}
+          className="px-4 py-1.5 text-sm font-medium bg-zinc-800 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors border border-zinc-700"
+        >
+          Assets
+        </button>
 
         <button
           onClick={handlePlay}

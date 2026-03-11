@@ -108,7 +108,7 @@ export default function ComponentTree() {
         <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Components</span>
         <button
           onClick={() => setSchemaModal({})}
-          className="text-xs text-violet-400 hover:text-violet-300 transition-colors"
+          className="text-lg text-violet-400 hover:text-violet-300 transition-colors"
           title="New component"
         >
           +
@@ -156,7 +156,7 @@ export default function ComponentTree() {
                     e.stopPropagation()
                     handleAddVariation(component.id)
                   }}
-                  className="opacity-0 group-hover:opacity-100 text-xs text-zinc-500 hover:text-violet-400 transition-all"
+                  className="opacity-0 group-hover:opacity-100 text-lg text-zinc-500 hover:text-violet-400 transition-all"
                   title="Add variation"
                 >
                   +

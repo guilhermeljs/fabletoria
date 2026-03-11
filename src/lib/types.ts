@@ -21,6 +21,8 @@ export interface StoryNode {
   /** Tiptap JSON serialised as string via JSON.stringify(editor.getJSON()) */
   content: string
   position: { x: number; y: number }
+  width?: number
+  height?: number
   /** If set, this node was created from a variation drag-drop */
   variationId: EntityId | null
   createdAt: number
@@ -72,6 +74,27 @@ export interface Variation {
   createdAt: number
   updatedAt: number
 }
+
+// ── Asset ─────────────────────────────────────────────────────────────────────
+
+export interface Asset {
+  id: string
+  name: string
+  type: 'image' | 'document' | 'text'
+  extension: string
+  mimeType: string
+  sourceType: 'local' | 'url'
+  data: Blob | null
+  url: string | null
+  folder: string
+  size: number
+  status: 'uploading' | 'ready'
+  uploadProgress: number
+  createdAt: number
+  updatedAt: number
+}
+
+export type AssetMap = Record<string, Asset>
 
 // ── Store entity maps ────────────────────────────────────────────────────────
 

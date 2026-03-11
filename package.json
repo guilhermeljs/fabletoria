@@ -32,6 +32,7 @@
     "@electron-toolkit/utils": "^4.0.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@tailwindcss/vite": "^4.2.1",
+    "@tanstack/react-virtual": "^3.13.21",
     "@tiptap/core": "^3.20.1",
     "@tiptap/pm": "^3.20.1",
     "@tiptap/react": "^3.20.1",
