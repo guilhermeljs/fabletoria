@@ -83,6 +83,26 @@ export const useUIStore = create<UIState>()((set) => ({
 
   addToSelection(item) {
     set((s) => {
+      const isNodeOrEdge = (t: string) => t === 'node' || t === 'edge'
+      const isVariation = (t: string) => t === 'variation'
+
+      // Prevent selecting nodes/edges together with variations, as that creates a lot of UI edge cases. Instead, if the new item is a variation, keep only the existing variations in the selection. If the new item is a node/edge, keep only the existing nodes/edges.
+      if (
+        (isNodeOrEdge(item.type) && s.selection.some((x) => isVariation(x.type))) ||
+        (isVariation(item.type) && s.selection.some((x) => isNodeOrEdge(x.type)))
+      ) {
+        const keepType = item.type === 'variation' ? 'variation' : undefined
+
+        const next = [
+          ...s.selection.filter((x) =>
+            keepType ? x.type === 'variation' : x.type !== 'variation'
+          ),
+          item
+        ]
+
+        return { selection: next, ...deriveSingles(next) }
+      }
+
       const existing = s.selection.some((x) => x.id === item.id && x.type === item.type)
       if (existing) return s
       const next = [...s.selection, item]

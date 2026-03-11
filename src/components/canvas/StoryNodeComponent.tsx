@@ -34,10 +34,21 @@ interface InlineEditorProps {
   nodeId: string
   initialContent: string
   onClose: () => void
+  onTextOverflowed?: (size: OverflowSize) => void
+  
 }
+type OverflowSize = { width: number; height: number }
 
-function InlineEditor({ nodeId, initialContent, onClose }: InlineEditorProps) {
+function InlineEditor({
+  nodeId,
+  initialContent,
+  onClose,
+  onTextOverflowed
+}: InlineEditorProps) {
   const updateNodeContent = useProjectStore((s) => s.updateNodeContent)
+
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const wasOverflowed = useRef(false)
 
   const editor = useEditor({
     extensions: [StarterKit, VariableNode, AssetImageNode, AssetFileNode],
@@ -45,26 +56,58 @@ function InlineEditor({ nodeId, initialContent, onClose }: InlineEditorProps) {
     autofocus: true,
   })
 
-  const close = useCallback(()=>{
-    updateNodeContent(nodeId, JSON.stringify(editor?.getJSON() ?? parseContent(initialContent)))
-    onClose();
+  const close = useCallback(() => {
+    updateNodeContent(
+      nodeId,
+      JSON.stringify(editor?.getJSON() ?? parseContent(initialContent))
+    )
+    onClose()
   }, [nodeId])
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()
     }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
-  }, [onClose])
+  }, [close])
+
+  useEffect(() => {
+    if (!editor) return
+
+    const checkOverflow = () => {
+      const el = containerRef.current
+      if (!el) return
+
+      const overflowX = el.scrollWidth - el.clientWidth
+      const overflowY = el.scrollHeight - el.clientHeight
+
+      const overflow = overflowX > 0 || overflowY > 0
+
+      if (!wasOverflowed.current && overflow) {
+        wasOverflowed.current = true
+
+        onTextOverflowed?.({
+          width: overflowX,
+          height: overflowY
+        })
+      }
+    }
+
+    editor.on('update', checkOverflow)
+
+    return () => {
+      editor.off('update', checkOverflow)
+    }
+  }, [editor, onTextOverflowed])
 
   return (
     <EditorContent
+      ref={containerRef}
       editor={editor}
       onBlur={close}
-      onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
-      className={`${styles.content} ${styles.contentEditing} narrative-content`}
+      onMouseDown={(e) => e.stopPropagation()}
+      className={`${styles.content} ${styles.contentEditing} nodrag narrative-content`}
     />
   )
 }
@@ -73,10 +116,11 @@ function InlineEditor({ nodeId, initialContent, onClose }: InlineEditorProps) {
 
 const EXTENSIONS = [StarterKit, VariableNode, AssetImageNode, AssetFileNode]
 
-const StoryNodeComponent = memo(({ data, selected, id }: NodeProps) => {
+const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProps) => {
   const nodeData = data as StoryNodeData
   const variations = useProjectStore((s) => s.variations)
   const updateNodeTitle = useProjectStore((s) => s.updateNodeTitle)
+  const updateNodeSize = useProjectStore((s) => s.updateNodeSize)
   const assets = useAssetStore((s) => s.assets)
 
   const [editingTitle, setEditingTitle] = useState(false)
@@ -173,7 +217,7 @@ const StoryNodeComponent = memo(({ data, selected, id }: NodeProps) => {
         {editingTitle && !variation ? (
           <input
             ref={titleInputRef}
-            className={styles.titleInput}
+            className={`${styles.titleInput} nodrag`}
             value={titleValue}
             onChange={(e) => setTitleValue(e.target.value)}
             onBlur={commitTitle}
@@ -197,9 +241,19 @@ const StoryNodeComponent = memo(({ data, selected, id }: NodeProps) => {
           nodeId={id as string}
           initialContent={nodeData.content}
           onClose={() => setEditingContent(false)}
+          onTextOverflowed={(size) => { 
+            if(!width && size.height == 0) return;
+            if(!height && size.width == 0) return;
+            updateNodeSize(id as string, (width || 0) + size.width, (height || 0) + size.height) 
+          }}
         />
       ) : (
         <div
+        style={{
+            overflowWrap: 'break-word',
+            wordBreak: 'break-word',
+            whiteSpace: 'pre-wrap'
+          }}
           className={`${styles.content} narrative-content`}
           dangerouslySetInnerHTML={{ __html: html }}
           onDoubleClick={(_e) => { setEditingContent(true) }}

@@ -5,10 +5,6 @@ import { useProjectStore } from '../../stores/project-store'
 const X_GAP = 400  // horizontal distance between levels
 const Y_GAP = 200  // vertical distance between siblings
 
-const MAX_WIDTH = 250
-const MIN_WIDTH = 120
-const ASPECT = 2 // height = width * 2
-
 /** Returns the handle id ('right' | 'left' | 'bottom' | 'top') that best faces the target node. */
 function bestSourceHandle(source: StoryNode, target: StoryNode): string {
   const dx = target.position.x - source.position.x

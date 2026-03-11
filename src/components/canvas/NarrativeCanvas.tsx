@@ -11,14 +11,12 @@ import {
   ReactFlowProvider,
   type FinalConnectionState,
   type EdgeChange,
-  type OnSelectionChangeParams,
   SelectionMode
 } from '@xyflow/react'
 import { useProjectStore } from '../../stores/project-store'
 import { useUIStore } from '../../stores/ui-store'
 import StoryNodeComponent from './StoryNodeComponent'
 import type { EntityId } from '../../lib/types'
-import type { SelectionItem } from '../../stores/ui-store'
 import NodeEdge from './NodeEdge'
 
 const nodeTypes = { storyNode: StoryNodeComponent }
@@ -27,7 +25,7 @@ const edgeTypes = { default: NodeEdge }
 const VARIATION_DRAG_TYPE = 'application/narrativeflow-variation'
 
 interface ContextMenu {
-  type: 'node' | 'pane' | 'edgeDrop'
+  type: 'node' | 'pane'
   nodeId?: string
   x: number
   y: number
@@ -42,7 +40,6 @@ interface NarrativeCanvasProps {
 
 function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
   const store = useProjectStore()
-  const setSelection = useUIStore((s) => s.setSelection)
   const addToSelection = useUIStore((s) => s.addToSelection)
   const removeFromSelection = useUIStore((s) => s.removeFromSelection)
 
@@ -70,8 +67,8 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
           id: n.id,
           type: 'storyNode',
           position: n.position,
-          ...(n.width !== undefined ? { width: n.width } : {}),
-          ...(n.height !== undefined ? { height: n.height } : {}),
+          width: n.width,
+          height: n.height,
           selected: selection.some((s) => s.id === n.id),
           data: {
             content: n.content,
@@ -215,29 +212,12 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
       // Defer to next tick so the document 'click' listener that closes menus
       // (fired by the same mouseup that ends the drag) runs first.
       setTimeout(() => {
-        setContextMenu({
-          type: 'edgeDrop',
-          x: clientX,
-          y: clientY,
-          flowX: flowPos.x,
-          flowY: flowPos.y,
-          sourceNodeId
-        })
+        const newNode = store.createNode(narrativeId, { position: flowPos })
+        store.createConnection(sourceNodeId, newNode.id, connectionState.fromHandle?.position)
       }, 0)
     },
     [screenToFlowPosition]
   )
-
-  const handleEdgeDropAddNode = useCallback(() => {
-    if (!contextMenu || contextMenu.type !== 'edgeDrop') return
-    const position = { x: contextMenu.flowX ?? 0, y: contextMenu.flowY ?? 0 }
-    const newNode = store.createNode(narrativeId, { position })
-    if (contextMenu.sourceNodeId) {
-      store.createConnection(contextMenu.sourceNodeId, newNode.id)
-    }
-    setContextMenu(null)
-    pendingConnectionRef.current = null
-  }, [store, narrativeId, contextMenu])
 
   // Drag-drop: variation onto canvas
   const onDragOver = useCallback((e: React.DragEvent) => {
@@ -326,19 +306,6 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
             >
               Add Story Piece
             </button>
-          )}
-          {contextMenu.type === 'edgeDrop' && (
-            <>
-              <div style={{ padding: '4px 14px 2px', fontSize: 10, color: '#6c7086', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Add and connect
-              </div>
-              <button
-                style={menuItemStyle}
-                onClick={handleEdgeDropAddNode}
-              >
-                Story Piece
-              </button>
-            </>
           )}
           {contextMenu.type === 'node' && contextMenu.nodeId && (
             <>

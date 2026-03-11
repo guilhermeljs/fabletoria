@@ -35,7 +35,7 @@ export interface ProjectState {
   // ── Node actions ──────────────────────────────────────────────────────────
   createNode: (
     narrativeId: EntityId,
-    opts?: { position?: { x: number; y: number }; variationId?: EntityId; title?: string; content?: string }
+    opts?: { position?: { x: number; y: number }; width?: number; height?: number; variationId?: EntityId; title?: string; content?: string }
   ) => StoryNode
   updateNodeContent: (id: EntityId, content: string) => void
   updateNodeTitle: (id: EntityId, title: string) => void
@@ -161,6 +161,8 @@ export const useProjectStore = create<ProjectState>()(
         title: opts.title ?? variation?.defaultTitle ?? '',
         content: opts.content ?? variation?.defaultContent ?? JSON.stringify({ type: 'doc', content: [{ type: 'paragraph' }] }),
         position: opts.position ?? { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 },
+        width: opts.width ?? 200,
+        height: opts.height ?? 100,
         variationId: opts.variationId ?? null,
         createdAt: now(),
         updatedAt: now()
