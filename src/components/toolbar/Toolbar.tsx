@@ -51,6 +51,16 @@ export default function Toolbar() {
         )}
 
 
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          onClick={() => window.open('https://github.com/fabletoria/narrativeflow', '_blank')}
+          title="Star us on GitHub"
+        >
+          <BaseIcon name="Github" size={14} />
+          <span className="ml-tk-1">Star us on Github</span>
+        </BaseButton>
+
         <McpButton />
 
         <BaseVerticalSeparator/>
@@ -79,7 +89,6 @@ export default function Toolbar() {
 
 
         <BaseVerticalSeparator/>
-
 
         <BaseButton
           variant="ghost"

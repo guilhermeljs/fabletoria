@@ -43,7 +43,7 @@ export default function TiptapEditor({ value, onChange }: TiptapEditorProps) {
     }
   }
 
-  return (
+  return (  
     <div
       className="flex flex-col gap-2"
       onMouseDown={(e) => e.stopPropagation()}
@@ -96,7 +96,7 @@ export default function TiptapEditor({ value, onChange }: TiptapEditorProps) {
           type="button"
           onMouseDown={(e) => {
             e.preventDefault()
-            modalStore.openModal("AssetManager")
+            modalStore.openModal("AssetManager", { mode: "select", onSelect: handleAssetSelect })
           }}
           className="px-2 py-1 text-xs rounded border bg-transparent border-zinc-600 text-zinc-400 hover:border-zinc-400"
           title="Insert asset"

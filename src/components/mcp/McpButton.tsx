@@ -24,7 +24,7 @@ export default function McpButton() {
               onClick={() => setPanelOpen((v) => !v)}
             >
               <BaseIcon name="Wand" size={18} />
-              <div className={"px-2"}>
+              <div>
                 <BaseText size='xs'>MCP</BaseText>
               </div>
           </BaseButton>

@@ -18,7 +18,7 @@ interface Props {
   onSelect?: (asset: Asset) => void
 }
 
-export default function AssetManagerModal({ mode, onClose, onSelect }: Props) {
+export default function AssetManagerModal({ mode = 'browse', onClose, onSelect }: Props) {
   const assets = useAssetStore((s) => s.assets)
   const deleteAsset = useAssetStore((s) => s.deleteAsset)
   const createLocalAsset = useAssetStore((s) => s.createLocalAsset)
@@ -198,11 +198,6 @@ export default function AssetManagerModal({ mode, onClose, onSelect }: Props) {
             leftIcon={<BaseIcon name="Trash2" size={14} />}
           >
             Delete ({selectedIds.size})
-          </BaseButton>
-        )}
-        {mode === 'browse' && (
-          <BaseButton size="md" onClick={onClose} className="border border-border-main hover:bg-bg-surface">
-            Done
           </BaseButton>
         )}
       </div>

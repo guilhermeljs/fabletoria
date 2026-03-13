@@ -50,6 +50,7 @@ export default function App() {
         components: componentMap,
         variations: variationMap
       })
+      useProjectStore.temporal.getState().clear()
       useAssetStore.setState({ assets: assetMap })
 
       // Ensure at least one narrative exists
