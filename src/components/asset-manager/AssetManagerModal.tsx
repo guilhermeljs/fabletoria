@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useAssetStore } from '../../stores/asset-store'
-import { useUIStore } from '../../stores/ui-store'
 import type { Asset } from '../../lib/types'
 import AssetGrid from './AssetGrid'
 import AssetSearchBar from './AssetSearchBar'
 import AssetUploadBar from './AssetUploadBar'
 import AssetBreadcrumb from './AssetBreadcrumb'
 import AssetDetailPanel from './AssetDetailPanel'
-import ConfirmModal from './ConfirmModal'
+import { BaseText } from '../primitives/BaseText'
+import { BaseButton } from '../primitives/BaseButton'
+import { BaseIcon } from '../primitives/BaseIcon'
+import { useModalStore } from '../../stores/modal-store'
 import { useAssetDrop } from '../../hooks/useAssetDrop'
 
 interface Props {
@@ -21,35 +23,20 @@ export default function AssetManagerModal({ mode, onClose, onSelect }: Props) {
   const deleteAsset = useAssetStore((s) => s.deleteAsset)
   const createLocalAsset = useAssetStore((s) => s.createLocalAsset)
   const createUrlAsset = useAssetStore((s) => s.createUrlAsset)
-  const activeFolder = useUIStore((s) => s.activeFolder)
-  const setActiveFolder = useUIStore((s) => s.setActiveFolder)
+  const modalStore = useModalStore()
+  const [activeFolder, setActiveFolder] = useState('/')
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [lastClickedId, setLastClickedId] = useState<string | null>(null)
   const [detailAsset, setDetailAsset] = useState<Asset | null>(null)
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const [folderDeleteStep, setFolderDeleteStep] = useState<{ folder: string; step: 1 | 2 } | null>(null)
-
-  const backdropRef = useRef<HTMLDivElement>(null)
-
-  // Close on Escape
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [onClose])
 
   const allAssets = Object.values(assets)
 
-  // Compute visible assets
   const visibleAssets = searchQuery
     ? allAssets.filter((a) => a.name.toLowerCase().includes(searchQuery.toLowerCase()))
     : allAssets.filter((a) => a.folder === activeFolder)
 
-  // Compute folders at current level
   const allFolderPaths = Array.from(new Set(allAssets.map((a) => a.folder))).sort()
   const folders = activeFolder === '/'
     ? allFolderPaths.filter((f) => f !== '/' && !f.slice(1).includes('/'))
@@ -104,30 +91,15 @@ export default function AssetManagerModal({ mode, onClose, onSelect }: Props) {
 
   const handleDeleteSelected = () => {
     if (selectedIds.size === 0) return
-    setConfirmDelete(true)
-  }
-
-  const confirmDeleteAssets = () => {
-    selectedIds.forEach((id) => deleteAsset(id))
-    setSelectedIds(new Set())
-    setConfirmDelete(false)
-  }
-
-  const handleDeleteFolder = (folder: string) => {
-    setFolderDeleteStep({ folder, step: 1 })
-  }
-
-  const handleFileSelect = (files: File[]) => {
-    files.forEach((file) => createLocalAsset(file, activeFolder))
-  }
-
-  const handleUrlSubmit = (url: string, name: string) => {
-    createUrlAsset(url, name, activeFolder)
-  }
-
-  const handleFolderCreate = (name: string) => {
-    const newPath = activeFolder === '/' ? `/${name}` : `${activeFolder}/${name}`
-    setActiveFolder(newPath)
+    modalStore.openModal('Confirm', {
+      title: `Delete ${selectedIds.size} Asset(s)`,
+      message: `Are you sure you want to delete ${selectedIds.size} selected asset(s)? This action cannot be undone.`,
+      confirmLabel: 'Delete',
+      onConfirm: () => {
+        selectedIds.forEach((id) => deleteAsset(id))
+        setSelectedIds(new Set())
+      }
+    })
   }
 
   const { isDragging, dropProps } = useAssetDrop((files) => {
@@ -141,134 +113,99 @@ export default function AssetManagerModal({ mode, onClose, onSelect }: Props) {
     }
   }
 
-  const folderAssetCount = folderDeleteStep
-    ? allAssets.filter((a) => a.folder === folderDeleteStep.folder || a.folder.startsWith(folderDeleteStep.folder + '/')).length
-    : 0
-
   return (
     <div
-      ref={backdropRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-      onClick={(e) => { if (e.target === backdropRef.current) onClose() }}
+      className="relative flex flex-col bg-bg-header border border-border-main rounded-tk-xl shadow-2xl w-full max-w-5xl pointer-events-auto"
+      style={{ minHeight: '560px', maxHeight: '80vh' }}
+      {...dropProps}
     >
-      <div
-        className="relative flex flex-col bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl w-full max-w-4xl"
-        style={{ minHeight: '560px', maxHeight: '80vh' }}
-        {...dropProps}
-      >
-        {/* Drop overlay */}
-        {isDragging && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-violet-950/80 border-2 border-violet-500 border-dashed pointer-events-none">
-            <span className="text-violet-300 text-lg font-semibold">Drop to create asset</span>
-          </div>
-        )}
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-700 shrink-0">
-          <span className="text-sm font-semibold text-zinc-200">Assets</span>
-          <div className="flex-1 mx-4">
-            <AssetSearchBar value={searchQuery} onChange={setSearchQuery} />
-          </div>
-          <button
-            onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-300 transition-colors text-lg leading-none"
-          >
-            ✕
-          </button>
+      {/* Drop overlay */}
+      {isDragging && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-tk-xl bg-brand-primary/20 border-2 border-brand-primary border-dashed pointer-events-none">
+          <BaseText size="lg" weight="semibold" variant="primary">Drop to create asset</BaseText>
         </div>
+      )}
 
-        {/* Breadcrumb */}
-        {!searchQuery && (
-          <div className="px-5 py-2 border-b border-zinc-800 shrink-0">
-            <AssetBreadcrumb path={activeFolder} onNavigate={handleFolderClick} />
-          </div>
-        )}
-
-        {/* Body */}
-        <div className="flex flex-1 overflow-hidden">
-          <div className="flex-1 overflow-hidden">
-            <AssetGrid
-              assets={visibleAssets}
-              folders={folders}
-              selectedIds={selectedIds}
-              onItemClick={handleItemClick}
-              onFolderClick={handleFolderClick}
-              onFolderDelete={handleDeleteFolder}
-              isDragging={isDragging}
-              mode={mode}
-            />
-          </div>
-
-          {/* Detail panel (select mode only) */}
-          {mode === 'select' && detailAsset && (
-            <AssetDetailPanel
-              asset={detailAsset}
-              onSelect={() => handleSelectAsset(detailAsset)}
-              onClose={() => setDetailAsset(null)}
-            />
-          )}
+      {/* Header */}
+      <div className="flex items-center justify-between px-tk-5 py-tk-3 border-b border-border-main shrink-0">
+        <BaseText size="sm" weight="semibold" className='ml-tk-4'>
+          Asset Manager
+        </BaseText>
+        <div className="flex-1 mx-tk-4">
+          <AssetSearchBar value={searchQuery} onChange={setSearchQuery} />
         </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between px-5 py-3 border-t border-zinc-800 shrink-0">
-          <AssetUploadBar
-            currentFolder={activeFolder}
-            onFileSelect={handleFileSelect}
-            onUrlSubmit={handleUrlSubmit}
-            onFolderCreate={handleFolderCreate}
-          />
-          {selectedIds.size > 0 && mode === 'browse' && (
-            <button
-              onClick={handleDeleteSelected}
-              className="ml-4 px-3 py-1.5 text-xs font-medium text-red-400 border border-red-800 rounded-lg hover:bg-red-950 transition-colors shrink-0"
-            >
-              Delete ({selectedIds.size})
-            </button>
-          )}
-        </div>
+        <BaseButton variant="ghost" size="sm" onClick={onClose} className="min-w-0 p-tk-1">
+          <BaseIcon name="X" size={18} />
+        </BaseButton>
       </div>
 
-      {/* Single/bulk delete confirmation */}
-      {confirmDelete && (
-        <ConfirmModal
-          title="Delete assets?"
-          body={`Deleting ${selectedIds.size} asset(s) will also remove all references to them from your narrative content. This cannot be undone.`}
-          confirmLabel="Delete"
-          onConfirm={confirmDeleteAssets}
-          onCancel={() => setConfirmDelete(false)}
-          danger
-        />
+      {/* Breadcrumb */}
+      {!searchQuery && (
+        <div className="px-tk-5 py-tk-2 border-b border-border-main shrink-0">
+          <AssetBreadcrumb path={activeFolder} onNavigate={handleFolderClick} />
+        </div>
       )}
 
-      {/* Folder delete — step 1 */}
-      {folderDeleteStep?.step === 1 && (
-        <ConfirmModal
-          title={`Delete folder '${folderDeleteStep.folder.split('/').pop()}'?`}
-          body={`This folder contains ${folderAssetCount} asset(s). Deleting it will permanently remove all assets and their references from your narrative content.`}
-          confirmLabel="Continue"
-          onConfirm={() => setFolderDeleteStep({ ...folderDeleteStep, step: 2 })}
-          onCancel={() => setFolderDeleteStep(null)}
-          danger
-        />
-      )}
+      {/* Body */}
+      <div className="flex flex-1 bg-bg-surface overflow-hidden">
+        <div className="flex-1 overflow-hidden">
+          <AssetGrid
+            assets={visibleAssets}
+            folders={folders}
+            selectedIds={selectedIds}
+            onItemClick={handleItemClick}
+            onFolderClick={handleFolderClick}
+            onFolderDelete={(folder) => {
+                modalStore.openModal('Confirm', {
+                  title: `Delete Folder`,
+                  message: `Are you sure you want to delete the folder "${folder}" and all its contents? This action cannot be undone.`,
+                  confirmLabel: 'Delete Folder',
+                  onConfirm: () => {
+                    useAssetStore.getState().deleteFolder(folder)
+                  }
+                })
+            }}
+            isDragging={isDragging}
+            mode={mode}
+          />
+        </div>
 
-      {/* Folder delete — step 2 */}
-      {folderDeleteStep?.step === 2 && (
-        <ConfirmModal
-          title="Are you absolutely sure?"
-          body="This action is destructive and cannot be undone."
-          confirmLabel="Delete forever"
-          onConfirm={() => {
-            useAssetStore.getState().deleteFolder(folderDeleteStep.folder)
-            setFolderDeleteStep(null)
-            if (activeFolder.startsWith(folderDeleteStep.folder)) {
-              setActiveFolder('/')
-            }
+        {mode === 'select' && detailAsset && (
+          <AssetDetailPanel
+            asset={detailAsset}
+            onSelect={() => handleSelectAsset(detailAsset)}
+            onClose={() => setDetailAsset(null)}
+          />
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between px-tk-4 py-tk-2 border-t rounded-b-tk-xl border-border-main bg-bg-header shrink-0">
+        <AssetUploadBar
+          currentFolder={activeFolder}
+          onFileSelect={(files) => files.forEach((file) => createLocalAsset(file, activeFolder))}
+          onUrlSubmit={(url, name) => createUrlAsset(url, name, activeFolder)}
+          onFolderCreate={(name) => {
+            const newPath = activeFolder === '/' ? `/${name}` : `${activeFolder}/${name}`
+            setActiveFolder(newPath)
           }}
-          onCancel={() => setFolderDeleteStep(null)}
-          danger
         />
-      )}
+        {selectedIds.size > 0 && mode === 'browse' && (
+          <BaseButton
+            variant="danger"
+            size="sm"
+            onClick={handleDeleteSelected}
+            leftIcon={<BaseIcon name="Trash2" size={14} />}
+          >
+            Delete ({selectedIds.size})
+          </BaseButton>
+        )}
+        {mode === 'browse' && (
+          <BaseButton size="md" onClick={onClose} className="border border-border-main hover:bg-bg-surface">
+            Done
+          </BaseButton>
+        )}
+      </div>
     </div>
   )
 }

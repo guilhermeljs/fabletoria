@@ -10,6 +10,9 @@ import NarrativeCanvas from './components/canvas/NarrativeCanvas'
 import InspectorPanel from './components/inspector/InspectorPanel'
 import PlayMode from './components/play/PlayMode'
 import AssetManagerModal from './components/asset-manager/AssetManagerModal'
+import { PortalProvider } from './components/layout/PortalProvider'
+import { ModalContainer } from './components/layout/ModalContainer'
+import { ToastContainer } from './components/layout/ToastContainer'
 
 export default function App() {
   const isHydrated = useRef(false)
@@ -18,10 +21,6 @@ export default function App() {
   const inspectorOpen = useUIStore((s) => s.inspectorOpen)
   const toggleInspector = useUIStore((s) => s.toggleInspector)
   const isPlayActive = usePlayStore((s) => s.isActive)
-  const assetManagerOpen = useUIStore((s) => s.assetManagerOpen)
-  const assetManagerMode = useUIStore((s) => s.assetManagerMode)
-  const assetManagerInsertCallback = useUIStore((s) => s.assetManagerInsertCallback)
-  const closeAssetManager = useUIStore((s) => s.closeAssetManager)
   const [storageWarning, setStorageWarning] = useState(false)
 
   // Hydrate stores from Dexie on app mount
@@ -76,11 +75,11 @@ export default function App() {
   // Storage warning listener
   useEffect(() => {
     const handler = () => setStorageWarning(true)
-    window.addEventListener('narrativeflow:storage-warning', handler)
-    return () => window.removeEventListener('narrativeflow:storage-warning', handler)
+    window.addEventListener('fabletoria:storage-warning', handler)
+    return () => window.removeEventListener('fabletoria:storage-warning', handler)
   }, [])
 
-  // Undo/redo keyboard shortcuts (T048)
+  // Undo/redo keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement
@@ -106,70 +105,66 @@ export default function App() {
   }, [])
 
   return (
-    <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
-      <Toolbar />
+    <PortalProvider>
+      <div className="flex flex-col h-screen bg-bg-main text-text-main overflow-hidden">
+        <Toolbar />
 
-      {storageWarning && (
-        <div className="flex items-center justify-between px-4 py-2 bg-amber-950 border-b border-amber-700 text-xs text-amber-300 shrink-0">
-          <span>⚠ Storage almost full. Consider exporting your work.</span>
-          <button
-            onClick={() => setStorageWarning(false)}
-            className="text-amber-500 hover:text-amber-300"
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
-      <div className="flex flex-1 overflow-hidden relative">
-        <ExplorerSidebar />
-        
-        <main className="flex-1 relative overflow-hidden">
-          {activeNarrativeId ? (
-            <NarrativeCanvas key={activeNarrativeId} narrativeId={activeNarrativeId} />
-          ) : (
-            <div className="flex items-center justify-center h-full text-zinc-600">
-              Loading…
-            </div>
-          )}
-        </main>
-
-        {/* Inspector panel — slides in from right */}
-        {inspectorOpen && (
-          <aside className="w-72 shrink-0 bg-zinc-950 border-l border-zinc-800 overflow-y-auto flex flex-col">
-            <InspectorPanel />
-          </aside>
+        {storageWarning && (
+          <div className="flex items-center justify-between px-tk-4 py-tk-2 bg-status-warning/20 border-b border-status-warning/40 text-tk-xs text-status-warning shrink-0">
+            <span>⚠ Storage almost full. Consider exporting your work.</span>
+            <button
+              onClick={() => setStorageWarning(false)}
+              className="text-status-warning hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
         )}
 
-        {/* Right tray toggle tab */}
-        <button
-          onClick={toggleInspector}
-          title={inspectorOpen ? 'Close inspector' : 'Open inspector'}
-          style={{
-            position: 'absolute',
-            right: inspectorOpen ? '288px' : '0px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            transition: 'right 0.15s ease',
-            zIndex: 10
-          }}
-          className="flex items-center justify-center w-5 h-14 bg-zinc-800 border border-zinc-700 border-r-0 rounded-l-md hover:bg-zinc-700 transition-colors"
-        >
-          <span className="text-zinc-400 text-xs select-none" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
-            {inspectorOpen ? '›' : '‹'}
-          </span>
-        </button>
+        <div className="flex flex-1 overflow-hidden relative">
+          <ExplorerSidebar />
+          
+          <main className="flex-1 relative overflow-hidden">
+            {activeNarrativeId ? (
+              <NarrativeCanvas key={activeNarrativeId} narrativeId={activeNarrativeId} />
+            ) : (
+              <div className="flex items-center justify-center h-full text-text-dim">
+                Loading…
+              </div>
+            )}
+          </main>
+
+          {/* Inspector panel */}
+          {inspectorOpen && (
+            <aside className="w-72 shrink-0 bg-bg-main border-l border-border-main overflow-y-auto flex flex-col">
+              <InspectorPanel />
+            </aside>
+          )}
+
+          <button
+            onClick={toggleInspector}
+            title={inspectorOpen ? 'Close inspector' : 'Open inspector'}
+            style={{
+              position: 'absolute',
+              right: inspectorOpen ? '288px' : '0px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              transition: 'right 0.15s ease',
+              zIndex: 10
+            }}
+            className="flex items-center justify-center w-5 h-14 bg-bg-surface border border-border-main border-r-0 rounded-l-tk-md hover:bg-bg-header transition-colors"
+          >
+            <span className="text-text-dim text-tk-xs select-none" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
+              {inspectorOpen ? '›' : '‹'}
+            </span>
+          </button>
+        </div>
+
+        {isPlayActive && <PlayMode />}
+
+        <ModalContainer />
+        <ToastContainer />
       </div>
-
-      {isPlayActive && <PlayMode />}
-
-      {assetManagerOpen && (
-        <AssetManagerModal
-          mode={assetManagerMode}
-          onClose={closeAssetManager}
-          {...(assetManagerInsertCallback ? { onSelect: assetManagerInsertCallback } : {})}
-        />
-      )}
-    </div>
+    </PortalProvider>
   )
 }

@@ -1,5 +1,5 @@
 {
-  "name": "narrativeflow",
+  "name": "fabletoria",
   "version": "1.0.0",
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/main.js",
@@ -40,6 +40,7 @@
     "@xyflow/react": "^12.10.1",
     "cors": "^2.8.6",
     "dexie": "^4.3.0",
+    "lucide-react": "^0.577.0",
     "nanoid": "^5.1.6",
     "tailwindcss": "^4.2.1",
     "zundo": "^2.3.0",

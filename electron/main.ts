@@ -11,7 +11,7 @@ function createWindow(): void {
     height: 800,
     show: false,
     autoHideMenuBar: true,
-    title: 'NarrativeFlow',
+    title: 'Fabletoria',
     webPreferences: {
       preload: join(__dirname, '../preload/preload.js'),
       contextIsolation: true,
@@ -37,7 +37,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
-  electronApp.setAppUserModelId('com.narrativeflow')
+  electronApp.setAppUserModelId('com.fabletoria')
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)

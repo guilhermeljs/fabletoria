@@ -49,7 +49,7 @@ export async function startMcpServer(): Promise<McpStartResult | McpErrorResult>
   }
 
   mcpServer = new McpServer({
-    name: 'narrativeflow',
+    name: 'fabletoria',
     version: '1.0.0'
   })
 

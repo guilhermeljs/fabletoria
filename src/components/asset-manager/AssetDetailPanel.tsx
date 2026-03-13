@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { Asset } from '../../lib/types'
+import { BaseButton } from '../primitives/BaseButton'
+import { BaseIcon, IconName } from '../primitives/BaseIcon'
+import { BaseText } from '../primitives/BaseText'
 
 interface Props {
   asset: Asset
@@ -7,10 +10,10 @@ interface Props {
   onClose: () => void
 }
 
-const FILE_ICONS: Record<string, string> = {
-  pdf: '📄',
-  txt: '📝',
-  md: '📝',
+const FILE_ICONS: Record<string, IconName> = {
+  pdf: 'FileText',
+  txt: 'FileText',
+  md: 'FileText',
 }
 
 export default function AssetDetailPanel({ asset, onSelect, onClose }: Props) {
@@ -34,44 +37,48 @@ export default function AssetDetailPanel({ asset, onSelect, onClose }: Props) {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   }
 
+  const FileIcon = FILE_ICONS[asset.extension] ?? 'File'
+
   return (
-    <div className="w-52 shrink-0 border-l border-zinc-800 flex flex-col bg-zinc-900/50">
+    <aside className="w-60 shrink-0 border-l border-border-main flex flex-col bg-bg-header">
+      <header className="p-tk-4 flex items-center justify-between border-b border-border-main">
+        <BaseText size="sm" weight="semibold">Details</BaseText>
+        <BaseButton variant="ghost" size="sm" onClick={onClose} className="p-tk-1 min-w-0 h-auto">
+          <BaseIcon name="X" size={16} />
+        </BaseButton>
+      </header>
+
       {/* Preview */}
-      <div className="flex-1 flex items-center justify-center p-4 bg-zinc-900/80">
+      <div className="flex-1 flex flex-col p-tk-4 gap-tk-4">
+        <div className="flex-1 flex items-center justify-center p-tk-4 bg-bg-main rounded-tk-md border border-border-main min-h-[120px]">
         {asset.type === 'image' && imgSrc ? (
           <img
             src={imgSrc}
             alt={asset.name}
-            className="max-w-full max-h-full object-contain rounded"
+            className="max-w-full max-h-full object-contain rounded-tk-sm"
             draggable={false}
           />
         ) : (
-          <span className="text-5xl">{FILE_ICONS[asset.extension] ?? '📎'}</span>
+          <BaseIcon name={FileIcon} size={48} className="text-text-dim" />
         )}
       </div>
 
       {/* Metadata */}
-      <div className="p-3 border-t border-zinc-800 space-y-1">
-        <p className="text-xs font-medium text-zinc-200 truncate" title={asset.name}>{asset.name}</p>
-        <p className="text-xs text-zinc-500">{asset.extension.toUpperCase()} · {formatSize(asset.size)}</p>
-        <p className="text-xs text-zinc-600">{new Date(asset.createdAt).toLocaleDateString()}</p>
+        <div className="space-y-tk-2">
+          <BaseText size="sm" weight="medium" className="truncate">{asset.name}</BaseText>
+          <div className="space-y-tk-1">
+            <BaseText size="xs" variant="dim">{asset.extension.toUpperCase()} · {formatSize(asset.size)}</BaseText>
+            <BaseText size="xs" variant="dim">Created: {new Date(asset.createdAt).toLocaleDateString()}</BaseText>
+          </div>
+        </div>
       </div>
 
       {/* Actions */}
-      <div className="p-3 border-t border-zinc-800 flex flex-col gap-2">
-        <button
-          onClick={onSelect}
-          className="w-full py-1.5 text-xs font-medium bg-violet-600 text-white rounded-lg hover:bg-violet-500 transition-colors"
-        >
+      <footer className="p-tk-4 border-t border-border-main flex flex-col gap-tk-2">
+        <BaseButton variant="primary" size="md" onClick={onSelect}>
           Select
-        </button>
-        <button
-          onClick={onClose}
-          className="w-full py-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-        >
-          Close panel
-        </button>
-      </div>
-    </div>
+        </BaseButton>
+      </footer>
+    </aside>
   )
 }

@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { BaseIcon } from '../primitives/BaseIcon'
+import { BaseText } from '../primitives/BaseText'
+import { BaseButton } from '../primitives/BaseButton'
 
 interface Props {
   path: string
@@ -7,29 +9,26 @@ interface Props {
 }
 
 export default function AssetFolderItem({ path, onClick, onDelete }: Props) {
-  const [showActions, setShowActions] = useState(false)
   const name = path.split('/').pop() ?? path
 
   return (
     <div
-      className="relative flex flex-col items-center justify-center rounded-lg border border-zinc-700 hover:border-zinc-500 bg-zinc-800 cursor-pointer transition-colors"
+      className="group relative flex flex-col items-center justify-center rounded-tk-lg border border-border-main hover:border-border-light bg-bg-surface cursor-pointer transition-colors"
       style={{ height: '120px' }}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
       onClick={onClick}
     >
-      <span className="text-3xl mb-1">📁</span>
-      <span className="text-xs text-zinc-400 truncate max-w-full px-2">{name}</span>
+      <BaseIcon name="Folder" size={36} className="text-brand-primary mb-tk-2" />
+      <BaseText size="xs" variant="dim" className="truncate max-w-full px-2">{name}</BaseText>
 
-      {showActions && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onDelete() }}
-          className="absolute top-1.5 right-1.5 text-zinc-600 hover:text-red-400 transition-colors text-xs leading-none"
-          title="Delete folder"
-        >
-          ✕
-        </button>
-      )}
+      <BaseButton
+        variant="ghost"
+        size="sm"
+        onClick={(e) => { e.stopPropagation(); onDelete() }}
+        className="absolute top-1 right-1 text-text-dim hover:text-status-error opacity-0 group-hover:opacity-100 p-1 min-w-0 h-auto"
+        title="Delete folder"
+      >
+        <BaseIcon name="Trash2" size={14} />
+      </BaseButton>
     </div>
   )
 }

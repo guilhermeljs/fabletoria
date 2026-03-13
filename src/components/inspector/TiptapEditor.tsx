@@ -5,6 +5,7 @@ import { AssetImageNode } from '../../extensions/AssetImageNode'
 import { AssetFileNode } from '../../extensions/AssetFileNode'
 import { useUIStore } from '../../stores/ui-store'
 import type { Asset } from '../../lib/types'
+import { useModalStore } from '@/stores/modal-store'
 
 interface TiptapEditorProps {
   value: string
@@ -14,7 +15,7 @@ interface TiptapEditorProps {
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 export default function TiptapEditor({ value, onChange }: TiptapEditorProps) {
-  const openAssetManager = useUIStore((s) => s.openAssetManager)
+  const modalStore = useModalStore()
 
   const editor = useEditor({
     extensions: [StarterKit, VariableNode, AssetImageNode, AssetFileNode],
@@ -95,7 +96,7 @@ export default function TiptapEditor({ value, onChange }: TiptapEditorProps) {
           type="button"
           onMouseDown={(e) => {
             e.preventDefault()
-            openAssetManager('select', handleAssetSelect)
+            modalStore.openModal("AssetManager")
           }}
           className="px-2 py-1 text-xs rounded border bg-transparent border-zinc-600 text-zinc-400 hover:border-zinc-400"
           title="Insert asset"
@@ -107,12 +108,8 @@ export default function TiptapEditor({ value, onChange }: TiptapEditorProps) {
       {/* Editor */}
       <EditorContent
         editor={editor}
-        className="narrative-content text-sm text-zinc-200 min-h-[80px] border border-zinc-700 rounded p-2 focus-within:border-violet-500 transition-colors"
+        className="narrative-content text-sm text-text-main bg-bg-surface min-h-[80px] border border-border-main rounded-tk-md p-2 focus-within:border-brand-primary transition-colors"
       />
-
-      <p className="text-xs text-zinc-500">
-        Tip: type <code className="text-violet-400">{'{{variationName.fieldName}}'}</code> to insert a variable
-      </p>
     </div>
   )
 }

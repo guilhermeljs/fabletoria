@@ -11,8 +11,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'NarrativeFlow',
-        short_name: 'NarrativeFlow',
+        name: 'Fabletoria',
+        short_name: 'Fabletoria',
         description: 'Interactive narrative authoring tool',
         display: 'standalone',
         background_color: '#1a1a2e',
@@ -43,7 +43,7 @@ export default defineConfig({
   server: {
     allowedHosts: [
       "teste.nodeflow.stream",
-      "narrativeflow.nodeflow.stream"
+      "fabletoria.nodeflow.stream"
     ]
   },
   test: {

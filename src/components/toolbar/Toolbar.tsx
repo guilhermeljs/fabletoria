@@ -4,12 +4,20 @@ import { useProjectStore } from '../../stores/project-store'
 import { usePlayStore } from '../../stores/play-store'
 import McpButton from '../mcp/McpButton'
 import OrganizeButton from './OrganizeButton'
+import SettingsModal from './SettingsModal'
+import { BaseText } from '../primitives/BaseText'
+import { BaseButton } from '../primitives/BaseButton'
+import { BaseIcon } from '../primitives/BaseIcon'
+import { BaseBadge } from '../primitives/BaseBadge'
+import { useModalStore } from '@/stores/modal-store'
+import { FabletoriaIcon } from '../primitives/FabletoriaIcon'
+import { BaseVerticalSeparator } from '../primitives/BaseVerticalSeparator'
 
 export default function Toolbar() {
   const activeNarrativeId = useUIStore((s) => s.activeNarrativeId)
   const narrative = useProjectStore((s) => (activeNarrativeId ? s.narratives[activeNarrativeId] : null))
   const playStart = usePlayStore((s) => s.start)
-  const openAssetManager = useUIStore((s) => s.openAssetManager)
+  const modalStore = useModalStore();
   const [showNoStartWarning, setShowNoStartWarning] = useState(false)
 
   const handlePlay = () => {
@@ -23,41 +31,65 @@ export default function Toolbar() {
   }
 
   return (
-    <header className="flex items-center justify-between px-4 py-2 bg-zinc-950 border-b border-zinc-800 shrink-0">
-      <div className="flex items-center gap-3">
-        <span className="text-base font-semibold text-violet-400 tracking-tight">
-          NarrativeFlow
-        </span>
+    <header className="flex items-center justify-between px-tk-4 py-tk-2 bg-bg-header border-b border-border-main shrink-0">
+      <div className="flex items-center gap-tk-3">
+        <div className='h-[32px]'>
+          <FabletoriaIcon />
+        </div>
+
         {narrative && (
-          <span className="text-sm text-zinc-500">{narrative.name}</span>
+          <BaseText size="sm" variant="dim">{narrative.name}</BaseText>
         )}
       </div>
+      
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-tk-3">
         {showNoStartWarning && (
-          <span className="text-xs text-amber-400 bg-amber-950 px-3 py-1 rounded-full border border-amber-700">
+          <BaseBadge variant="warning" rounded>
             Right-click a node → Set as Start Node
-          </span>
+          </BaseBadge>
         )}
+
+
+        <McpButton />
+
+        <BaseVerticalSeparator/>
 
         <OrganizeButton />
 
-        <button
-          onClick={() => openAssetManager('browse')}
-          className="px-4 py-1.5 text-sm font-medium bg-zinc-800 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors border border-zinc-700"
+      
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          onClick={() => modalStore.openModal('AssetManager')}
+          title="Assets"
         >
-          Assets
-        </button>
+          <BaseIcon name="Package" size={18} />
+        </BaseButton>
+        
 
-        <button
+        <BaseButton
+          variant="ghost"
+          size="sm"
           onClick={handlePlay}
           disabled={!activeNarrativeId}
-          className="px-4 py-1.5 text-sm font-medium bg-violet-600 text-white rounded-lg hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          Play
-        </button>
+          <BaseIcon name="Play" size={18} />
+        </BaseButton>
 
-        <McpButton />
+
+        <BaseVerticalSeparator/>
+
+
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          onClick={() => modalStore.openModal('Settings')}
+          title="Settings"
+        >
+          <BaseIcon name="Settings" size={18} />
+        </BaseButton>
+
       </div>
     </header>
   )

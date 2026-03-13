@@ -72,9 +72,9 @@ export default function McpPanel({ onClose }: Props) {
             Paste this command to use in Claude
           </p>
           <div className="flex items-center gap-2 bg-zinc-800 rounded-lg px-3 py-2">
-            <code className="text-xs text-zinc-200 flex-1 truncate">claude mcp add narrativeflow --transport sse --scope user http://localhost:7700/sse</code>
+            <code className="text-xs text-zinc-200 flex-1 truncate">claude mcp add fabletoria --transport sse --scope user http://localhost:7700/sse</code>
             <button
-              onClick={() => copyText('claude mcp add narrativeflow --transport sse --scope user http://localhost:7700/sse')}
+              onClick={() => copyText('claude mcp add fabletoria --transport sse --scope user http://localhost:7700/sse')}
               className="text-xs text-zinc-400 hover:text-zinc-200 shrink-0"
               title="Copy command"
             >
@@ -86,9 +86,9 @@ export default function McpPanel({ onClose }: Props) {
             Paste this command to use in Gemini
           </p>
           <div className="flex items-center gap-2 bg-zinc-800 rounded-lg px-3 py-2">
-            <code className="text-xs text-zinc-200 flex-1 truncate">gemini mcp add --transport sse narrativeflow http://localhost:7700/sse</code>
+            <code className="text-xs text-zinc-200 flex-1 truncate">gemini mcp add --transport sse fabletoria http://localhost:7700/sse</code>
             <button
-              onClick={() => copyText('gemini mcp add --transport sse narrativeflow http://localhost:7700/sse')}
+              onClick={() => copyText('gemini mcp add --transport sse fabletoria http://localhost:7700/sse')}
               className="text-xs text-zinc-400 hover:text-zinc-200 shrink-0"
               title="Copy command"
             >

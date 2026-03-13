@@ -106,3 +106,12 @@ export type StoryNodeMap = Record<EntityId, StoryNode>
 export type ConnectionMap = Record<EntityId, Connection>
 export type ComponentMap = Record<EntityId, Component>
 export type VariationMap = Record<EntityId, Variation>
+// ── Settings ─────────────────────────────────────────────────────────────────
+
+export interface AppSettings {
+  id: string
+  organizeRatio: number
+  organizeMaxWidth: number
+  organizeHGap: number
+  organizeVGap: number
+}

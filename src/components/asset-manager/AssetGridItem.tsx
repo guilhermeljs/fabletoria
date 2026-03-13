@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Asset } from '../../lib/types'
+import { BaseIcon, IconName } from '../primitives/BaseIcon'
+import { BaseText } from '../primitives/BaseText'
 
 interface Props {
   asset: Asset
@@ -8,10 +10,10 @@ interface Props {
   mode: 'browse' | 'select'
 }
 
-const FILE_ICONS: Record<string, string> = {
-  pdf: '📄',
-  txt: '📝',
-  md: '📝',
+const FILE_ICONS: Record<string, IconName> = {
+  pdf: 'FileText',
+  txt: 'FileText',
+  md: 'FileText',
 }
 
 export default function AssetGridItem({ asset, isSelected, onClick, mode }: Props) {
@@ -27,19 +29,20 @@ export default function AssetGridItem({ asset, isSelected, onClick, mode }: Prop
   }, [asset.type, asset.sourceType, asset.data])
 
   const imgSrc = asset.sourceType === 'url' ? asset.url : objectUrl
+  const FileIcon = FILE_ICONS[asset.extension] ?? 'File'
+
+  const selectionClass = isSelected
+    ? 'border-brand-primary bg-brand-primary/10 ring-1 ring-brand-primary'
+    : 'border-border-main hover:border-border-light bg-bg-surface'
 
   return (
     <div
       onClick={onClick}
-      className={`group relative flex flex-col rounded-lg overflow-hidden cursor-pointer border transition-colors ${
-        isSelected
-          ? 'border-violet-500 bg-violet-950/30'
-          : 'border-zinc-700 hover:border-zinc-500 bg-zinc-800'
-      }`}
+      className={`group relative flex flex-col rounded-tk-lg overflow-hidden cursor-pointer border transition-all duration-150 ${selectionClass}`}
       style={{ height: '120px' }}
     >
       {/* Thumbnail area */}
-      <div className="flex-1 relative flex items-center justify-center overflow-hidden bg-zinc-900">
+      <div className="flex-1 relative flex items-center justify-center overflow-hidden bg-bg-main p-tk-2">
         {asset.type === 'image' && imgSrc ? (
           <img
             src={imgSrc}
@@ -48,43 +51,41 @@ export default function AssetGridItem({ asset, isSelected, onClick, mode }: Prop
             draggable={false}
           />
         ) : (
-          <span className="text-3xl">
-            {FILE_ICONS[asset.extension] ?? '📎'}
-          </span>
+          <BaseIcon name={FileIcon} size={32} className="text-text-dim" />
         )}
 
         {/* Upload progress overlay */}
         {asset.status === 'uploading' && (
-          <div className="absolute inset-0 bg-zinc-900/80 flex flex-col items-center justify-center gap-1">
-            <div className="w-3/4 h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+          <div className="absolute inset-0 bg-bg-surface/80 flex flex-col items-center justify-center gap-1 backdrop-blur-sm">
+            <div className="w-3/4 h-1.5 bg-border-main rounded-full overflow-hidden">
               <div
-                className="h-full bg-violet-500 transition-all duration-200"
+                className="h-full bg-brand-primary transition-all duration-200"
                 style={{ width: `${asset.uploadProgress}%` }}
               />
             </div>
-            <span className="text-xs text-zinc-400">{asset.uploadProgress}%</span>
+            <BaseText size="xs" variant="dim">{asset.uploadProgress}%</BaseText>
           </div>
         )}
 
         {/* Selection checkbox */}
         {mode === 'browse' && (
           <div
-            className={`absolute top-1.5 left-1.5 w-4 h-4 rounded border transition-all ${
+            className={`absolute top-2 left-2 w-4 h-4 rounded-tk-sm border-2 transition-all duration-150 flex items-center justify-center ${
               isSelected
-                ? 'bg-violet-500 border-violet-500 flex items-center justify-center'
-                : 'border-zinc-600 bg-zinc-800/70 opacity-0 group-hover:opacity-100'
+                ? 'bg-brand-primary border-brand-primary'
+                : 'border-border-light bg-bg-surface opacity-0 group-hover:opacity-100'
             }`}
           >
-            {isSelected && <span className="text-white text-xs leading-none">✓</span>}
+            {isSelected && <BaseIcon name="Check" size={12} className="text-white" />}
           </div>
         )}
       </div>
 
       {/* Filename */}
-      <div className="px-1.5 py-1 shrink-0">
-        <p className="text-xs text-zinc-400 truncate" title={asset.name}>
+      <div className="px-tk-2 py-tk-1.5 shrink-0 border-t border-border-main">
+        <BaseText size="xs" variant="dim" className="truncate">
           {asset.name}
-        </p>
+        </BaseText>
       </div>
     </div>
   )

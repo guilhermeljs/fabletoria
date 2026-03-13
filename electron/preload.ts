@@ -13,10 +13,26 @@ if (process.contextIsolated) {
         onMutation: (handler: (channel: string, payload: unknown, replyChannel: string) => void) => {
           // Listen for all mutation channels from main process
           const channels = [
-            'narrative:create', 'node:create', 'node:createFromVariation',
-            'node:update', 'node:setStart', 'node:delete',
-            'edge:create', 'edge:delete', 'component:create',
-            'variation:create', 'node:editContent'
+            'narrative:create',
+            'node:create',
+            'node:createFromVariation',
+            'node:update',
+            'node:setStart',
+            'node:updateTitle',
+            'node:delete',
+            'node:editContent',
+            'edge:create',
+            'edge:delete',
+            'component:create',
+            'variation:create',
+            'variation:edit',
+            'variation:delete',
+            'query:listNarratives',
+            'query:listNodes',
+            'query:listEdges',
+            'query:listComponents',
+            'query:listVariations',
+            'query:readNarrative'
           ]
           channels.forEach(channel => {
             ipcRenderer.on(channel, (_event, { payload, replyChannel }: { payload: unknown; replyChannel: string }) => {

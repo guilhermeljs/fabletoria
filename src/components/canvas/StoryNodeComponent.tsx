@@ -121,13 +121,14 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
   const variations = useProjectStore((s) => s.variations)
   const updateNodeTitle = useProjectStore((s) => s.updateNodeTitle)
   const updateNodeSize = useProjectStore((s) => s.updateNodeSize)
+  const updateNodePosition = useProjectStore((s) => s.updateNodePosition)
   const assets = useAssetStore((s) => s.assets)
 
   const [editingTitle, setEditingTitle] = useState(false)
   const [editingContent, setEditingContent] = useState(false)
   const [titleValue, setTitleValue] = useState(nodeData.title ?? '')
   const titleInputRef = useRef<HTMLInputElement>(null)
-
+  
   // Sync titleValue when external changes come in (e.g. from inspector)
   useEffect(() => {
     if (!editingTitle) setTitleValue(nodeData.title ?? '')
@@ -179,6 +180,10 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
     <div className={className}>
       { selected && (
       <NodeResizer
+        onResizeEnd={(_e, params) => {
+          updateNodeSize(id as string, params.width, params.height)
+          updateNodePosition(id as string, { x: params.x, y: params.y })
+        }}
         minWidth={100}
         minHeight={40}
         maxWidth={1280}

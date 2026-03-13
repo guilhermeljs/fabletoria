@@ -3,6 +3,104 @@
 /* React Flow global styles */
 @import "@xyflow/react/dist/style.css";
 
+:root {
+  /* Frost Elegant Theme (Phase 1/5) */
+  --tk-color-bg-main: #020617;
+  --tk-color-bg-surface: #0f172a;
+  --tk-color-bg-header: #070c1b;
+
+  --tk-color-text-main: #edf0f3;
+  --tk-color-text-dim: #94a3b8;
+
+  --tk-color-brand-primary: #7dd3fc;
+  --tk-color-brand-accent: #c084fc;
+
+  --tk-color-status-success: #2dd4bf;
+  --tk-color-status-warning: #fde047;
+  --tk-color-status-error: #fb7185;
+  --tk-color-status-info: #38bdf8;
+
+  --tk-color-border: #1e293b;
+
+  --tk-spacing-1: 6px;
+  --tk-spacing-2: 10px;
+  --tk-spacing-3: 14px;
+  --tk-spacing-4: 20px;
+  --tk-spacing-6: 28px;
+  --tk-spacing-8: 40px;
+  --tk-spacing-12: 64px;
+
+  --tk-radius-sm: 2px;
+  --tk-radius-md: 3px;
+  --tk-radius-lg: 4px;
+  --tk-radius-xl: 24px;
+
+  --tk-font-ui: "Plus Jakarta Sans", Inter, system-ui, sans-serif;
+  --tk-font-content: "JetBrains Mono", monospace;
+
+  --tk-font-size-xs: 0.7rem;
+  --tk-font-size-sm: 0.825rem;
+  --tk-font-size-base: 0.95rem;
+  --tk-font-size-lg: 1.1rem;
+  --tk-font-size-xl: 1.3rem;
+  --tk-font-size-2xl: 1.75rem;
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(125, 211, 252, 0.2) transparent;
+}
+
+@theme {
+  /* Colors */
+  --color-bg-main: var(--tk-color-bg-main);
+  --color-bg-surface: var(--tk-color-bg-surface);
+  --color-bg-header: var(--tk-color-bg-header);
+  
+  --color-text-main: var(--tk-color-text-main);
+  --color-text-dim: var(--tk-color-text-dim);
+  
+  --color-brand-primary: var(--tk-color-brand-primary);
+  --color-brand-accent: var(--tk-color-brand-accent);
+  
+  --color-status-success: var(--tk-color-status-success);
+  --color-status-warning: var(--tk-color-status-warning);
+  --color-status-error: var(--tk-color-status-error);
+  --color-status-info: var(--tk-color-status-info);
+  
+  --color-border-main: var(--tk-color-border);
+
+  /* Spacing */
+  --spacing-tk-1: var(--tk-spacing-1);
+  --spacing-tk-2: var(--tk-spacing-2);
+  --spacing-tk-3: var(--tk-spacing-3);
+  --spacing-tk-4: var(--tk-spacing-4);
+  --spacing-tk-6: var(--tk-spacing-6);
+  --spacing-tk-8: var(--tk-spacing-8);
+  --spacing-tk-12: var(--tk-spacing-12);
+
+  /* Radius */
+  --radius-tk-sm: var(--tk-radius-sm);
+  --radius-tk-md: var(--tk-radius-md);
+  --radius-tk-lg: var(--tk-radius-lg);
+  --radius-tk-xl: var(--tk-radius-xl);
+
+  /* Typography */
+  --font-ui: var(--tk-font-ui);
+  --font-content: var(--tk-font-content);
+  
+  --text-tk-xs: var(--tk-font-size-xs);
+  --text-tk-sm: var(--tk-font-size-sm);
+  --text-tk-base: var(--tk-font-size-base);
+  --text-tk-lg: var(--tk-font-size-lg);
+  --text-tk-xl: var(--tk-font-size-xl);
+  --text-tk-2xl: var(--tk-font-size-2xl);
+}
+
+body {
+  background-color: var(--color-bg-main);
+  color: var(--color-text-main);
+  font-family: var(--font-ui);
+}
+
 /* Unresolved variable reference indicator (Feature US5) */
 .unresolved-ref {
   color: #dc2626;
@@ -19,6 +117,19 @@
 .narrative-content {
   outline: none;
   min-height: 1rem;
+}
+
+/* Chrome, Edge, Safari */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+  -appearance: textfield;
 }
 
 .narrative-content p {

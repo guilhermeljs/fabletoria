@@ -1,3 +1,6 @@
+import { BaseInput } from '../primitives/BaseInput'
+import { BaseIcon } from '../primitives/BaseIcon'
+
 interface Props {
   value: string
   onChange: (value: string) => void
@@ -5,12 +8,13 @@ interface Props {
 
 export default function AssetSearchBar({ value, onChange }: Props) {
   return (
-    <input
+    <BaseInput
       type="search"
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder="Search assets…"
-      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-violet-500 transition-colors"
+      leftIcon={<BaseIcon name="Search" size={16} />}
+      fullWidth
     />
   )
 }

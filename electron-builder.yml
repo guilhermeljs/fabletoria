@@ -1,5 +1,5 @@
-appId: com.narrativeflow.app
-productName: NarrativeFlow
+appId: com.fabletoria.app
+productName: Fabletoria
 directories:
   buildResources: build
 files:
@@ -13,7 +13,7 @@ asarUnpack:
   - resources/**
   - out/**
 win:
-  executableName: narrativeflow
+  executableName: fabletoria
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

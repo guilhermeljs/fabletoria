@@ -57,6 +57,7 @@ registerTool({
     componentId: z.string().optional().describe('If provided, only variations belonging to this component will be returned.')
   },
   handler: async ({ componentId }) => {
+    
     const result = await ipcBridge.invoke('query:listVariations', { componentId })
     return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] }
   }

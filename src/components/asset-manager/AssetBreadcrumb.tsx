@@ -1,3 +1,7 @@
+import { BaseButton } from '../primitives/BaseButton'
+import { BaseIcon } from '../primitives/BaseIcon'
+import { BaseText } from '../primitives/BaseText'
+
 interface Props {
   path: string
   onNavigate: (path: string) => void
@@ -12,23 +16,18 @@ export default function AssetBreadcrumb({ path, onNavigate }: Props) {
   }
 
   return (
-    <nav className="flex items-center gap-1 text-xs text-zinc-500">
-      <button
-        onClick={() => onNavigate('/')}
-        className="hover:text-zinc-300 transition-colors"
-      >
-        Assets
-      </button>
+    <nav className="flex items-center gap-tk-1.5">
+      <BaseButton variant="ghost" size="sm" onClick={() => onNavigate('/')}>
+        <BaseIcon name="Home" size={14} className="mr-tk-2" />
+        <BaseText size="xs">Assets</BaseText>
+      </BaseButton>
       {segments.map((seg, idx) => (
-        <span key={idx} className="flex items-center gap-1">
-          <span className="text-zinc-700">›</span>
-          <button
-            onClick={() => onNavigate(buildPath(idx))}
-            className="hover:text-zinc-300 transition-colors"
-          >
-            {seg}
-          </button>
-        </span>
+        <div key={idx} className="flex items-center gap-tk-1.5 text-text-dim">
+          <BaseIcon name="ChevronRight" size={16} />
+          <BaseButton variant="ghost" size="sm" onClick={() => onNavigate(buildPath(idx))}>
+            <BaseText size="sm">{seg}</BaseText>
+          </BaseButton>
+        </div>
       ))}
     </nav>
   )

@@ -211,10 +211,6 @@ export function initMcpBridge(): (() => void) | undefined {
             reply(replyChannel, err('VALIDATION_ERROR', 'Component name cannot be empty'))
             break
           }
-          if (!schema || schema.length === 0) {
-            reply(replyChannel, err('INVALID_SCHEMA', 'Component schema must define at least one field'))
-            break
-          }
           for (const field of schema) {
             if (field.type !== 'string' && field.type !== 'number') {
               reply(replyChannel, err('INVALID_SCHEMA', `Field '${field.name}' has invalid type '${field.type}' — must be 'string' or 'number'`))

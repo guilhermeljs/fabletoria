@@ -235,7 +235,10 @@ export const useProjectStore = create<ProjectState>()(
     },
 
     deleteNode(id) {
-      const { connections, narratives } = get()
+      const { nodes, connections, narratives } = get()
+      const nodeToDelete = nodes[id]
+      if (!nodeToDelete) return
+
       const relatedConnectionIds = Object.keys(connections).filter(
         (cid) => connections[cid]?.sourceNodeId === id || connections[cid]?.targetNodeId === id
       )
@@ -246,27 +249,20 @@ export const useProjectStore = create<ProjectState>()(
         const newConnections = { ...s.connections }
         relatedConnectionIds.forEach((cid) => delete newConnections[cid])
 
-        // Clear startNodeId references
         const newNarratives = { ...s.narratives }
-        for (const nid of Object.keys(newNarratives)) {
-          const n = newNarratives[nid]
-          if (n?.startNodeId === id) {
-            newNarratives[nid] = { ...n, id: n.id, name: n.name, startNodeId: null, createdAt: n.createdAt, updatedAt: now() }
-          }
+        if (newNarratives[nodeToDelete.narrativeId]?.startNodeId === id) {
+          newNarratives[nodeToDelete.narrativeId] = { ...newNarratives[nodeToDelete.narrativeId]!, startNodeId: null, updatedAt: now() }
         }
 
         return { nodes: newNodes, connections: newConnections, narratives: newNarratives }
       })
 
-      // Suppress the narrative that had this as start
-      const affectedNarratives = Object.values(narratives).filter((n) => n.startNodeId === id)
-
       persist(async () => {
         await db.transaction('rw', [db.nodes, db.connections, db.narratives], async () => {
           await db.nodes.delete(id)
           await db.connections.bulkDelete(relatedConnectionIds)
-          for (const n of affectedNarratives) {
-            await db.narratives.update(n.id, { startNodeId: null, updatedAt: now() })
+          if (narratives[nodeToDelete.narrativeId]?.startNodeId === id) {
+            await db.narratives.update(nodeToDelete.narrativeId, { startNodeId: null, updatedAt: now() })
           }
         })
       })

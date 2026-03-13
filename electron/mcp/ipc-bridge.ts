@@ -21,7 +21,7 @@ export const ipcBridge = {
   async invoke(channel: string, payload: unknown): Promise<ToolResult> {
     const win = BrowserWindow.getAllWindows()[0]
     if (!win) {
-      return { ok: false, code: 'NO_WINDOW', message: 'NarrativeFlow window is not available' }
+      return { ok: false, code: 'NO_WINDOW', message: 'Fabletoria window is not available' }
     }
 
     return new Promise<ToolResult>((resolve) => {

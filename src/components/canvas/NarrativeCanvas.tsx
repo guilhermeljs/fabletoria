@@ -23,7 +23,7 @@ import NodeEdge from './NodeEdge'
 const nodeTypes = { storyNode: StoryNodeComponent }
 const edgeTypes = { default: NodeEdge }
 
-const VARIATION_DRAG_TYPE = 'application/narrativeflow-variation'
+const VARIATION_DRAG_TYPE = 'application/fabletoria-variation'
 
 interface ContextMenu {
   type: 'node' | 'pane'
@@ -245,6 +245,7 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
       // (fired by the same mouseup that ends the drag) runs first.
       setTimeout(() => {
         const newNode = store.createNode(narrativeId, { position: flowPos })
+        useUIStore.getState().setSelection([{ type: "node", id: newNode.id }])
         store.createConnection(
           sourceNodeId,
           newNode.id,
@@ -311,7 +312,7 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
         fitView
         proOptions={{ hideAttribution: false }}
       >
-        <Background color="#2a2a3e" gap={20} />
+        <Background color="#020617" gap={20} />
       </ReactFlow>
       
       {rfNodes.length === 0 && rfEdges.length === 0 && (
