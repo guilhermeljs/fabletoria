@@ -76,7 +76,7 @@ export default function Toolbar() {
               variant={hasConnectedClient ? 'success' : 'secondary'}
               size="sm"
               onClick={() => modalStore.openModal('Share')}
-              title={hasConnectedClient ? 'Compartilhamento ativo' : 'Compartilhar projeto'}
+              title={hasConnectedClient ? 'Sharing project' : "Collaborate in real time"}
             >
               <BaseIcon name="Share2" size={14} />
               <span className="ml-tk-1">{hasConnectedClient ? 'Ao vivo' : 'Share'}</span>

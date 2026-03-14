@@ -27,7 +27,7 @@ export const BaseInput: React.FC<BaseInputProps> = ({
     flex h-tk-10 w-full rounded-tk-md border border-border-main
     bg-bg-surface py-tk-2 text-tk-sm text-text-main
     ring-offset-bg-main file:border-0 file:bg-transparent file:text-tk-sm file:font-medium
-    placeholder:border-border-main focus-visible:outline-none
+    placeholder:text-text-dim focus-visible:outline-none
     focus-visible:ring-1 focus-visible:ring-brand-primary focus-visible:ring-offset-1
     disabled:cursor-not-allowed disabled:opacity-50
     transition-shadow duration-200 ease-in-out

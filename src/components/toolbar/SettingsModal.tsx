@@ -47,6 +47,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           <BaseButton
             key={tab.id}
             variant="ghost"
+            rounded
             size="md"
             onClick={() => setActiveTabId(tab.id)}
             className={`justify-start transition-colors ${

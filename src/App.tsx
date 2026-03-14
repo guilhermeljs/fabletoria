@@ -14,6 +14,7 @@ import { PortalProvider } from './components/layout/PortalProvider'
 import { ModalContainer } from './components/layout/ModalContainer'
 import { ToastContainer } from './components/layout/ToastContainer'
 import ClientJoinScreen from './components/realtime/ClientJoinScreen'
+import { FeedbackProvider } from './components/feedback/FeedbackProvider'
 
 const IS_CLIENT_MODE = Boolean(getOfferFromUrl())
 
@@ -117,23 +118,26 @@ export default function App() {
   return (
     <PortalProvider>
       <div className="flex flex-col h-screen bg-bg-main text-text-main overflow-hidden">
+        <FeedbackProvider
+          defaultOpen={true}
+        />
         <Toolbar />
 
         {storageWarning && (
           <div className="flex items-center justify-between px-tk-4 py-tk-2 bg-status-warning/20 border-b border-status-warning/40 text-tk-xs text-status-warning shrink-0">
-            <span>⚠ Storage almost full. Consider exporting your work.</span>
+            <span>Storage almost full. Consider exporting your work.</span>
             <button
               onClick={() => setStorageWarning(false)}
               className="text-status-warning hover:text-white"
             >
-              ✕
+              X
             </button>
           </div>
         )}
 
         <div className="flex flex-1 overflow-hidden relative">
           <ExplorerSidebar />
-          
+
           <main className="flex-1 relative overflow-hidden">
             {activeNarrativeId ? (
               <NarrativeCanvas key={activeNarrativeId} narrativeId={activeNarrativeId} />
@@ -164,7 +168,10 @@ export default function App() {
             }}
             className="flex items-center justify-center w-5 h-14 bg-bg-surface border border-border-main border-r-0 rounded-l-tk-md hover:bg-bg-header transition-colors"
           >
-            <span className="text-text-dim text-tk-xs select-none" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
+            <span
+              className="text-text-dim text-tk-xs select-none"
+              style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+            >
               {inspectorOpen ? '›' : '‹'}
             </span>
           </button>

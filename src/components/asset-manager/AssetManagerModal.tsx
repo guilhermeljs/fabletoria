@@ -115,7 +115,7 @@ export default function AssetManagerModal({ mode = 'browse', onClose, onSelect }
 
   return (
     <div
-      className="relative flex flex-col bg-bg-header border border-border-main rounded-tk-xl shadow-2xl w-full max-w-5xl pointer-events-auto"
+      className="relative flex flex-col bg-bg-surface border border-border-main rounded-tk-xl shadow-2xl w-full max-w-5xl pointer-events-auto"
       style={{ minHeight: '560px', maxHeight: '80vh' }}
       {...dropProps}
     >
@@ -136,14 +136,14 @@ export default function AssetManagerModal({ mode = 'browse', onClose, onSelect }
         <div className="flex-1 mx-tk-4">
           <AssetSearchBar value={searchQuery} onChange={setSearchQuery} />
         </div>
-        <BaseButton variant="ghost" size="sm" onClick={onClose} className="min-w-0 p-tk-1 mr-tk-2">
+        <BaseButton variant="ghost" rounded size="sm" onClick={onClose} className="min-w-0 p-tk-1 mr-tk-2">
           <BaseIcon name="X" size={18} />
         </BaseButton>
       </div>
 
       {/* Breadcrumb */}
       {!searchQuery && (
-        <div className="px-tk-5 py-tk-2 border-b border-border-main shrink-0">
+        <div className="py-tk-2 border-b border-border-main shrink-0">
           <AssetBreadcrumb path={activeFolder} onNavigate={handleFolderClick} />
         </div>
       )}

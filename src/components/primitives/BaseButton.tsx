@@ -11,6 +11,7 @@ interface BaseButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
   rightIcon?: React.ReactNode;
   children: React.ReactNode;
   fullWidth?: boolean;
+  rounded?: boolean;
   active?: boolean;
 }
 
@@ -20,6 +21,7 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
   isLoading = false,
   leftIcon,
   rightIcon,
+  rounded,
   children,
   fullWidth = false,
   active = false,
@@ -27,8 +29,8 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center rounded-tk-md font-medium transition-transform duration-150 ease-out focus:outline-none disabled:opacity-50 disabled:pointer-events-none cursor-pointer';
-  
+  const baseClasses = 'inline-flex items-center justify-center font-medium transition-transform duration-150 ease-out focus:outline-none disabled:opacity-50 disabled:pointer-events-none cursor-pointer';
+  const roundedClass = `${rounded ? 'rounded-full' : 'rounded-tk-md'}`
   const sizeClasses = {
     sm: 'px-tk-2 py-tk-1 text-tk-xs',
     md: 'px-tk-4 py-tk-2 text-tk-sm',
@@ -47,6 +49,7 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
   const activeClasses = active ? 'bg-bg-header text-text-main' : '';
 
   const finalClassName = `
+    ${roundedClass}
     ${baseClasses}
     ${sizeClasses[size]}
     ${variantClasses[variant]}

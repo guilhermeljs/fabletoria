@@ -29,7 +29,7 @@ export default function McpButton() {
               </div>
           </BaseButton>
 
-          <div className="absolute flex justify-center items-center bottom-full right-0 top-[32px] px-tk-2 py-tk-2 bg-bg-header text-zinc-300 text-xs rounded-lg whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50">
+          <div className="absolute flex justify-center items-center bottom-full right-0 top-[40px] px-tk-2 py-tk-2 bg-bg-header text-zinc-300 text-xs rounded-lg whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50">
             <BaseText size="xs" variant='dim'>This feature is available only in the desktop app</BaseText>
           </div>
       </div>

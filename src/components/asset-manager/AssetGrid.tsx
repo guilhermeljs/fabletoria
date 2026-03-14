@@ -3,6 +3,8 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import type { Asset } from '../../lib/types'
 import AssetGridItem from './AssetGridItem'
 import AssetFolderItem from './AssetFolderItem'
+import { BaseIcon } from '../primitives/BaseIcon'
+import { BaseText } from '../primitives/BaseText'
 
 interface Props {
   assets: Asset[]
@@ -52,10 +54,16 @@ export default function AssetGrid({
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-zinc-600 gap-2 p-8">
-        <span className="text-3xl">📂</span>
-        <span className="text-sm">No assets here yet</span>
-        <span className="text-xs">Upload a file or add a URL below</span>
+      <div className="flex flex-col items-center justify-center h-full gap-2 p-8">
+        <BaseText size="sm" variant="dim">
+          <BaseIcon name="Inbox" />
+        </BaseText>
+        <BaseText size="sm" variant="dim">
+          No assets here yet
+        </BaseText>
+        <BaseText size="sm" variant="dim">
+          Upload a file or add a URL below
+        </BaseText>
       </div>
     )
   }

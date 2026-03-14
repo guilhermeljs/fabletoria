@@ -48,7 +48,7 @@ export default function ComponentSchemaModal({ component, onSave, onClose }: Com
 
   return (
     <div className="bg-bg-surface border border-border-main rounded-tk-xl shadow-2xl w-[500px] flex flex-col overflow-hidden pointer-events-auto max-h-[80vh]">
-      <header className="flex items-center justify-between py-tk-1 bg-bg-header shrink-0">
+      <header className="flex items-center justify-between py-tk-1 border-border-main border-b shrink-0">
         <BaseText size="xs" weight="semibold" className='ml-tk-4 uppercase' variant='dim'>
           {isEditing ? `Edit Component: ${component.name}` : 'New Component'}
         </BaseText>

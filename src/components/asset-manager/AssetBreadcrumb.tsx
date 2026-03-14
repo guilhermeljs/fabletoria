@@ -16,7 +16,7 @@ export default function AssetBreadcrumb({ path, onNavigate }: Props) {
   }
 
   return (
-    <nav className="flex items-center gap-tk-1.5">
+    <nav className="flex items-center gap-tk-1 ml-tk-2">
       <BaseButton variant="ghost" size="sm" onClick={() => onNavigate('/')}>
         <BaseIcon name="Home" size={14} className="mr-tk-2" />
         <BaseText size="xs">Assets</BaseText>
