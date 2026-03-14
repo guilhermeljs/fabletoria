@@ -18,6 +18,18 @@ import type {
 } from '../lib/types'
 import { InversePosition } from '@/lib/inverse'
 
+// ── Client-mode persistence bypass ───────────────────────────────────────────
+//
+// When running as a WebRTC client the project state lives in memory only;
+// no writes should touch IndexedDB so the client's own saved project is never
+// overwritten. Call `disableProjectStorePersistence()` once the peer connects.
+
+let _persistenceEnabled = true
+
+export function disableProjectStorePersistence(): void {
+  _persistenceEnabled = false
+}
+
 // ── State shape ──────────────────────────────────────────────────────────────
 
 export interface ProjectState {
@@ -92,6 +104,7 @@ function now(): number {
 }
 
 function persist(fn: () => Promise<void>): void {
+  if (!_persistenceEnabled) return
   fn().then(() => checkStorageQuota()).catch(console.error)
 }
 

@@ -1,5 +1,6 @@
 import { useMcp } from '../../hooks/useMcp'
 import type { McpServerStatus } from '../../stores/mcp-store'
+import { copyToClipboard } from '../../lib/clipboard'
 
 interface Props {
   onClose: () => void
@@ -25,12 +26,11 @@ export default function McpPanel({ onClose }: Props) {
   const isBusy = status === 'starting' || status === 'stopping'
 
   async function copyUrl() {
-    if (url) await navigator.clipboard.writeText(url)
+    if (url) await copyToClipboard(url)
   }
 
-
-  async function copyText(text) {
-    await navigator.clipboard.writeText(text)
+  async function copyText(text: string) {
+    await copyToClipboard(text)
   }
 
 

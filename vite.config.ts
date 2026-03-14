@@ -42,7 +42,6 @@ export default defineConfig({
   },
   server: {
     allowedHosts: [
-      "teste.nodeflow.stream",
       "fabletoria.nodeflow.stream"
     ]
   },

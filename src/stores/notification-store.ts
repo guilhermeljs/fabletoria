@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { newId } from '../lib/ids';
 
 export type ToastType = 'info' | 'success' | 'warning' | 'error';
 
@@ -20,7 +21,7 @@ interface NotificationState {
 export const useNotificationStore = create<NotificationState>((set) => ({
   toasts: [],
   addToast: (toast) => {
-    const id = crypto.randomUUID();
+    const id = newId();
     set((state) => ({
       toasts: [...state.toasts, { ...toast, id }],
     }));

@@ -8,12 +8,14 @@ import SettingsModal from '../toolbar/SettingsModal';
 import AssetManagerModal from '../asset-manager/AssetManagerModal';
 import ComponentSchemaModal from '../explorer/ComponentSchemaModal';
 import ConfirmModal from './ConfirmModal';
+import ShareModal from '../realtime/ShareModal';
 
 const MODAL_COMPONENTS: Record<string, React.FC<any>> = {
   Settings: SettingsModal,
   AssetManager: AssetManagerModal,
   ComponentSchema: ComponentSchemaModal,
   Confirm: ConfirmModal,
+  Share: ShareModal,
 };
 
 const ModalWrapper: React.FC<{ modal: ModalInstance; index: number }> = ({ modal, index }) => {

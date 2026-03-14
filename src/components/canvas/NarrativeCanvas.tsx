@@ -12,13 +12,14 @@ import {
   type FinalConnectionState,
   type EdgeChange,
   SelectionMode,
-  ConnectionMode
+  ConnectionMode,
 } from '@xyflow/react'
 import { useProjectStore } from '../../stores/project-store'
 import { useUIStore } from '../../stores/ui-store'
 import StoryNodeComponent from './StoryNodeComponent'
 import type { EntityId } from '../../lib/types'
 import NodeEdge from './NodeEdge'
+import { CursorTracker, RemoteCursors } from './RealtimeCursors'
 
 const nodeTypes = { storyNode: StoryNodeComponent }
 const edgeTypes = { default: NodeEdge }
@@ -320,6 +321,9 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
           Right-click to add the first story piece
         </div>
       )}
+      
+      <CursorTracker narrativeId={narrativeId} containerRef={containerRef}></CursorTracker>
+      <RemoteCursors narrativeId={narrativeId} key={"remote"}/>
 
       {contextMenu && (
         <div

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { newId } from '../lib/ids';
 
 export type ModalType = 'Settings' | 'AssetManager' | 'Confirm' | string;
 
@@ -20,7 +21,7 @@ export const useModalStore = create<ModalState>((set) => ({
   modalStack: [],
   isOpen: false,
   openModal: (type, props) => set((state) => {
-    const id = crypto.randomUUID();
+    const id = newId();
     return {
       modalStack: [...state.modalStack, { id, type, props }],
       isOpen: true,

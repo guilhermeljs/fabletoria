@@ -2,6 +2,7 @@ import React from 'react';
 import type { Narrative } from '../../lib/types';
 import { BaseText } from '../primitives/BaseText';
 import { BaseInput } from '../primitives/BaseInput';
+import { CURSOR_COLORS } from '../../stores/realtime-store';
 
 interface NarrativeListItemProps {
   narrative: Narrative;
@@ -15,6 +16,8 @@ interface NarrativeListItemProps {
   onCancelEdit: () => void;
   onContextMenu: (event: React.MouseEvent) => void;
   inputRef: React.RefObject<HTMLInputElement>;
+  /** Invite indices of clients currently viewing this narrative (host-only). */
+  clientIndices?: number[];
 }
 
 export const NarrativeListItem: React.FC<NarrativeListItemProps> = ({
@@ -29,6 +32,7 @@ export const NarrativeListItem: React.FC<NarrativeListItemProps> = ({
   onCancelEdit,
   onContextMenu,
   inputRef,
+  clientIndices = [],
 }) => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -51,6 +55,24 @@ export const NarrativeListItem: React.FC<NarrativeListItemProps> = ({
             <BaseInput ref={inputRef} value={editValue} onChange={(e) => onEditValueChange(e.target.value)} onBlur={onCommitEdit} onKeyDown={handleKeyDown} onClick={(e) => e.stopPropagation()} size="sm" />
         ) : (
             <BaseText size="sm" className="truncate flex-1">{narrative.name}</BaseText>
+        )}
+        {clientIndices.length > 0 && (
+          <div className="flex items-center gap-0.5 shrink-0">
+            {clientIndices.map((idx) => (
+              <span
+                key={idx}
+                title={`Client ${idx + 1}`}
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  backgroundColor: CURSOR_COLORS[idx % CURSOR_COLORS.length],
+                  display: 'inline-block',
+                  flexShrink: 0,
+                }}
+              />
+            ))}
+          </div>
         )}
     </li>
   );

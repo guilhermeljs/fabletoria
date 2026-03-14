@@ -122,19 +122,21 @@ export default function AssetManagerModal({ mode = 'browse', onClose, onSelect }
       {/* Drop overlay */}
       {isDragging && (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-tk-xl bg-brand-primary/20 border-2 border-brand-primary border-dashed pointer-events-none">
-          <BaseText size="lg" weight="semibold" variant="primary">Drop to create asset</BaseText>
+          <BaseText size="lg" weight="semibold" variant="primary">
+            Drop to create asset
+          </BaseText>
         </div>
       )}
 
       {/* Header */}
       <div className="flex items-center justify-between px-tk-5 py-tk-3 border-b border-border-main shrink-0">
-        <BaseText size="sm" weight="semibold" className='ml-tk-4'>
+        <BaseText size="xs" weight="semibold" className="ml-tk-4 uppercase" variant="dim">
           Asset Manager
         </BaseText>
         <div className="flex-1 mx-tk-4">
           <AssetSearchBar value={searchQuery} onChange={setSearchQuery} />
         </div>
-        <BaseButton variant="ghost" size="sm" onClick={onClose} className="min-w-0 p-tk-1">
+        <BaseButton variant="ghost" size="sm" onClick={onClose} className="min-w-0 p-tk-1 mr-tk-2">
           <BaseIcon name="X" size={18} />
         </BaseButton>
       </div>
@@ -156,14 +158,14 @@ export default function AssetManagerModal({ mode = 'browse', onClose, onSelect }
             onItemClick={handleItemClick}
             onFolderClick={handleFolderClick}
             onFolderDelete={(folder) => {
-                modalStore.openModal('Confirm', {
-                  title: `Delete Folder`,
-                  message: `Are you sure you want to delete the folder "${folder}" and all its contents? This action cannot be undone.`,
-                  confirmLabel: 'Delete Folder',
-                  onConfirm: () => {
-                    useAssetStore.getState().deleteFolder(folder)
-                  }
-                })
+              modalStore.openModal('Confirm', {
+                title: `Delete Folder`,
+                message: `Are you sure you want to delete the folder "${folder}" and all its contents? This action cannot be undone.`,
+                confirmLabel: 'Delete Folder',
+                onConfirm: () => {
+                  useAssetStore.getState().deleteFolder(folder)
+                }
+              })
             }}
             isDragging={isDragging}
             mode={mode}

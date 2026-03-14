@@ -4,15 +4,18 @@ import { useProjectStore } from './stores/project-store'
 import { useUIStore, ACTIVE_NARRATIVE_STORAGE_KEY } from './stores/ui-store'
 import { usePlayStore } from './stores/play-store'
 import { useAssetStore } from './stores/asset-store'
+import { useRealtimeStore, getOfferFromUrl } from './stores/realtime-store'
 import Toolbar from './components/toolbar/Toolbar'
 import ExplorerSidebar from './components/explorer/ExplorerSidebar'
 import NarrativeCanvas from './components/canvas/NarrativeCanvas'
 import InspectorPanel from './components/inspector/InspectorPanel'
 import PlayMode from './components/play/PlayMode'
-import AssetManagerModal from './components/asset-manager/AssetManagerModal'
 import { PortalProvider } from './components/layout/PortalProvider'
 import { ModalContainer } from './components/layout/ModalContainer'
 import { ToastContainer } from './components/layout/ToastContainer'
+import ClientJoinScreen from './components/realtime/ClientJoinScreen'
+
+const IS_CLIENT_MODE = Boolean(getOfferFromUrl())
 
 export default function App() {
   const isHydrated = useRef(false)
@@ -21,10 +24,16 @@ export default function App() {
   const inspectorOpen = useUIStore((s) => s.inspectorOpen)
   const toggleInspector = useUIStore((s) => s.toggleInspector)
   const isPlayActive = usePlayStore((s) => s.isActive)
+  const realtimeStatus = useRealtimeStore((s) => s.clientStatus)
   const [storageWarning, setStorageWarning] = useState(false)
 
-  // Hydrate stores from Dexie on app mount
+  // In client mode we never hydrate from IndexedDB — project state comes from
+  // the host via the data channel once the WebRTC connection is established.
+  const showClientScreen = IS_CLIENT_MODE && realtimeStatus !== 'connected'
+
+  // Hydrate stores from Dexie on app mount (skipped in client mode)
   useEffect(() => {
+    if (IS_CLIENT_MODE) return
     if (isHydrated.current) return
     isHydrated.current = true
 
@@ -130,7 +139,7 @@ export default function App() {
               <NarrativeCanvas key={activeNarrativeId} narrativeId={activeNarrativeId} />
             ) : (
               <div className="flex items-center justify-center h-full text-text-dim">
-                Loading…
+                Create or select a narrative to begin
               </div>
             )}
           </main>
@@ -165,6 +174,8 @@ export default function App() {
 
         <ModalContainer />
         <ToastContainer />
+
+        {showClientScreen && <ClientJoinScreen />}
       </div>
     </PortalProvider>
   )

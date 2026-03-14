@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useProjectStore } from '../../stores/project-store'
 import { useUIStore } from '../../stores/ui-store'
+import { useRealtimeStore } from '../../stores/realtime-store'
 import type { EntityId, Narrative } from '../../lib/types';
 import { NarrativeListItem } from './NarrativeListItem';
 import { useModalStore } from '../../stores/modal-store';
@@ -16,6 +17,22 @@ export default function NarrativeList() {
   const activeNarrativeId = useUIStore((s) => s.activeNarrativeId)
   const setActiveNarrative = useUIStore((s) => s.setActiveNarrative)
   const modalStore = useModalStore()
+
+  const realtimeMode = useRealtimeStore((s) => s.mode)
+  const clientCursors = useRealtimeStore((s) => s.clientCursors)
+
+  // Map narrativeId → list of client invite indices currently on that narrative
+  const clientsPerNarrative = useMemo<Record<string, number[]>>(() => {
+    if (realtimeMode !== 'host') return {}
+    const result: Record<string, number[]> = {}
+    for (const [idxStr, cursor] of Object.entries(clientCursors)) {
+      if (!cursor) continue
+      const list = result[cursor.narrativeId] ?? []
+      list.push(parseInt(idxStr))
+      result[cursor.narrativeId] = list
+    }
+    return result
+  }, [realtimeMode, clientCursors])
 
   const [editingId, setEditingId] = useState<EntityId | null>(null)
   const [editValue, setEditValue] = useState('')
@@ -90,6 +107,7 @@ export default function NarrativeList() {
             narrative={narrative}
             isActive={activeNarrativeId === narrative.id}
             isEditing={editingId === narrative.id}
+            clientIndices={clientsPerNarrative[narrative.id] ?? []}
             editValue={editValue}
             onEditValueChange={setEditValue}
             onSelect={() => {
