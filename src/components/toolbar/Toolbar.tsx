@@ -76,13 +76,15 @@ export default function Toolbar() {
               variant={hasConnectedClient ? 'success' : 'secondary'}
               size="sm"
               onClick={() => modalStore.openModal('Share')}
-              title={hasConnectedClient ? 'Sharing project' : "Collaborate in real time"}
+              title={hasConnectedClient ? 'Sharing project' : 'Collaborate in real time'}
             >
               <BaseIcon name="Share2" size={14} />
-              <span className="ml-tk-1">{hasConnectedClient ? 'Ao vivo' : 'Share'}</span>
-              <BaseBadge size="xs" rounded variant="primary" className="ml-tk-1">
-                Beta
-              </BaseBadge>
+              <span className="ml-tk-1">{hasConnectedClient ? 'Live now' : 'Share'}</span>
+              {!hasConnectedClient && (
+                <BaseBadge size="xs" rounded variant="primary" className="ml-tk-1">
+                  Beta
+                </BaseBadge>
+              )}
             </BaseButton>
 
             <BaseBalloon
@@ -107,7 +109,7 @@ export default function Toolbar() {
               message={
                 <BaseText size="sm">
                   <div className="inline-table whitespace-nowrap opacity-80">
-                    Edit the same story together in real time.
+                    Edit the same story together with your team in real time.
                   </div>
                   <div className="inline-block mt-tk-1 opacity-60">
                     Beta feature, we’re actively stabilizing it. Occasional bugs or disconnects may
@@ -123,7 +125,7 @@ export default function Toolbar() {
 
         {isClientMode && (
           <BaseBadge variant={clientConnected ? 'success' : 'info'} rounded>
-            {clientConnected ? 'Conectado (somente leitura)' : 'Conectando…'}
+            {clientConnected ? 'As Guest' : 'Connecting...'}
           </BaseBadge>
         )}
 

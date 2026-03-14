@@ -13,6 +13,7 @@ import PlayMode from './components/play/PlayMode'
 import { PortalProvider } from './components/layout/PortalProvider'
 import { ModalContainer } from './components/layout/ModalContainer'
 import { ToastContainer } from './components/layout/ToastContainer'
+import { MobileUnsupportedOverlay } from './components/layout/MobileUnsupported'
 import ClientJoinScreen from './components/realtime/ClientJoinScreen'
 import { FeedbackProvider } from './components/feedback/FeedbackProvider'
 
@@ -117,6 +118,7 @@ export default function App() {
 
   return (
     <PortalProvider>
+      <MobileUnsupportedOverlay />
       <div className="flex flex-col h-screen bg-bg-main text-text-main overflow-hidden">
         <FeedbackProvider
           defaultOpen={true}
