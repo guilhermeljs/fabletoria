@@ -17,17 +17,41 @@ interface ShareModalProps {
 function statusBadge(invite: InviteEntry) {
   switch (invite.status) {
     case 'preparing':
-      return <BaseBadge variant="info" rounded>Gerando…</BaseBadge>
+      return (
+        <BaseBadge variant="info" rounded>
+          Generating…
+        </BaseBadge>
+      )
     case 'waiting-answer':
-      return <BaseBadge variant="warning" rounded>Aguardando</BaseBadge>
+      return (
+        <BaseBadge variant="warning" rounded>
+          Waiting
+        </BaseBadge>
+      )
     case 'connecting':
-      return <BaseBadge variant="info" rounded>Conectando…</BaseBadge>
+      return (
+        <BaseBadge variant="info" rounded>
+          Connecting…
+        </BaseBadge>
+      )
     case 'connected':
-      return <BaseBadge variant="success" rounded>Conectado</BaseBadge>
+      return (
+        <BaseBadge variant="success" rounded>
+          Connected
+        </BaseBadge>
+      )
     case 'failed':
-      return <BaseBadge variant="error" rounded>Falhou</BaseBadge>
+      return (
+        <BaseBadge variant="error" rounded>
+          Failed
+        </BaseBadge>
+      )
     case 'disconnected':
-      return <BaseBadge variant="default" rounded>Desconectado</BaseBadge>
+      return (
+        <BaseBadge variant="default" rounded>
+          Disconnected
+        </BaseBadge>
+      )
   }
 }
 
@@ -46,23 +70,19 @@ function InviteRow({ invite }: { invite: InviteEntry }) {
 
   return (
     <div className="flex items-center gap-tk-3 px-tk-3 py-tk-2 rounded-tk-md bg-bg-header border border-border-main">
-      <span className="text-text-dim text-tk-xs font-mono shrink-0">
-        #{invite.idx + 1}
-      </span>
+      <span className="text-text-dim text-tk-xs font-mono shrink-0">#{invite.idx + 1}</span>
 
-      <div className="flex-1 min-w-0">
-        {statusBadge(invite)}
-      </div>
+      <div className="flex-1 min-w-0">{statusBadge(invite)}</div>
 
       {canCopy && (
         <button
           onClick={handleCopy}
           disabled={!invite.shareLink}
-          title="Copiar link de convite"
+          title="Copy invite link"
           className="flex items-center gap-tk-1 px-tk-2 py-tk-1 text-tk-xs rounded-tk-sm border border-border-main bg-bg-surface text-text-dim hover:text-text-main hover:bg-bg-header transition-colors disabled:opacity-40 disabled:pointer-events-none shrink-0"
         >
           <BaseIcon name={copied ? 'Check' : 'Clipboard'} size={12} />
-          <span>{copied ? 'Copiado!' : 'Copiar link'}</span>
+          <span>{copied ? 'Copied!' : 'Copy link'}</span>
         </button>
       )}
     </div>
@@ -113,12 +133,14 @@ export default function ShareModal({ onClose }: ShareModalProps) {
       <header className="flex items-center justify-between px-tk-5 py-tk-4 border-b border-border-main shrink-0">
         <div className="flex items-center gap-tk-3">
           <BaseIcon name="Share2" size={18} className="text-brand-primary" />
-          <BaseText size="lg" weight="semibold">Compartilhar projeto</BaseText>
+          <BaseText size="lg" weight="semibold">
+            Share Project
+          </BaseText>
         </div>
         <button
           onClick={onClose}
           className="text-text-dim hover:text-text-main transition-colors"
-          title="Fechar"
+          title="Close"
         >
           <BaseIcon name="X" size={16} />
         </button>
@@ -128,16 +150,17 @@ export default function ShareModal({ onClose }: ShareModalProps) {
         {/* ── Accept answer input ─────────────────────────────────────────── */}
         <div className="flex flex-col gap-tk-2">
           <BaseText size="sm" weight="semibold">
-            Cole o código de um convidado
+            Paste a guest's code
           </BaseText>
           <BaseText size="xs" variant="dim">
-            Quando um convidado abrir o link e gerar o código de confirmação, cole-o aqui para aceitar a conexão.
+            When a guest opens the link and generates the confirmation code, paste it here to accept
+            the connection.
           </BaseText>
 
           <div className="flex items-start gap-tk-2">
             <div className="flex-1">
               <BaseInput
-                placeholder="Cole o código de confirmação aqui…"
+                placeholder="Paste the confirmation code here…"
                 value={answerInput}
                 onChange={(e) => setAnswerInput(e.target.value)}
                 onKeyDown={handleAnswerKeyDown}
@@ -154,7 +177,7 @@ export default function ShareModal({ onClose }: ShareModalProps) {
               disabled={!answerInput.trim() || isAccepting}
               isLoading={isAccepting}
             >
-              Aceitar
+              Accept
             </BaseButton>
           </div>
         </div>
@@ -165,7 +188,9 @@ export default function ShareModal({ onClose }: ShareModalProps) {
         {/* ── Invites list ────────────────────────────────────────────────── */}
         <div className="flex flex-col gap-tk-3">
           <div className="flex items-center justify-between">
-            <BaseText size="sm" weight="semibold">Convites</BaseText>
+            <BaseText size="sm" weight="semibold">
+              Invites
+            </BaseText>
             <BaseButton
               variant="secondary"
               size="sm"
@@ -174,13 +199,13 @@ export default function ShareModal({ onClose }: ShareModalProps) {
               isLoading={isGenerating}
             >
               <BaseIcon name="UserPlus" size={14} />
-              <span className="ml-tk-1">Convidar</span>
+              <span className="ml-tk-1">Invite</span>
             </BaseButton>
           </div>
 
           {invites.length === 0 ? (
             <div className="flex items-center justify-center py-tk-6 text-text-dim text-tk-sm">
-              Você ainda não convidou ninguém.
+              You haven't invited anyone yet.
             </div>
           ) : (
             <div className="flex flex-col gap-tk-2 max-h-52 overflow-y-auto">
@@ -195,11 +220,11 @@ export default function ShareModal({ onClose }: ShareModalProps) {
       {/* Footer */}
       <footer className="flex items-center justify-between gap-tk-3 px-tk-5 py-tk-3 border-t border-border-main bg-bg-header">
         <BaseButton variant="ghost" size="md" onClick={onClose}>
-          Fechar
+          Close
         </BaseButton>
         {invites.length > 0 && (
           <BaseButton variant="danger" size="md" onClick={handleStopAndClose}>
-            Encerrar compartilhamento
+            Stop sharing
           </BaseButton>
         )}
       </footer>

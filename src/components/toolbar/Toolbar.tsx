@@ -109,7 +109,7 @@ export default function Toolbar() {
               message={
                 <BaseText size="sm">
                   <div className="inline-table whitespace-nowrap opacity-80">
-                    Edit the same story together with your team in real time.
+                    Collaborate with your team in real time.
                   </div>
                   <div className="inline-block mt-tk-1 opacity-60">
                     Beta feature, we’re actively stabilizing it. Occasional bugs or disconnects may
