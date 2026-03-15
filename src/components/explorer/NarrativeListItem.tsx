@@ -52,7 +52,16 @@ export const NarrativeListItem: React.FC<NarrativeListItemProps> = ({
   return (
     <li className={itemClasses} onClick={onSelect} onDoubleClick={onStartEdit} onContextMenu={onContextMenu}>
         {isEditing ? (
-            <BaseInput ref={inputRef} value={editValue} onChange={(e) => onEditValueChange(e.target.value)} onBlur={onCommitEdit} onKeyDown={handleKeyDown} onClick={(e) => e.stopPropagation()} size="sm" />
+            <BaseInput
+              ref={inputRef}
+              value={editValue}
+              onChange={(e) => onEditValueChange(e.target.value)}
+              onBlur={onCommitEdit}
+              onKeyDown={handleKeyDown}
+              onClick={(e) => e.stopPropagation()}
+              size="sm"
+              maxLength={64}
+            />
         ) : (
             <BaseText size="sm" className="truncate flex-1">{narrative.name}</BaseText>
         )}

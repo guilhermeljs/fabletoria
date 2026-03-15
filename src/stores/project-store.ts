@@ -18,6 +18,8 @@ import type {
 } from '../lib/types'
 import { InversePosition } from '@/lib/inverse'
 
+const NARRATIVE_NAME_MAX_LENGTH = 64
+
 // ── Client-mode persistence bypass ───────────────────────────────────────────
 //
 // When running as a WebRTC client the project state lives in memory only;
@@ -121,9 +123,10 @@ export const useProjectStore = create<ProjectState>()(
     // ── Narrative ─────────────────────────────────────────────────────────
 
     createNarrative(name) {
+      const normalized = name.trim().slice(0, NARRATIVE_NAME_MAX_LENGTH)
       const narrative: Narrative = {
         id: newId(),
-        name,
+        name: normalized,
         startNodeId: null,
         createdAt: now(),
         updatedAt: now()
@@ -134,14 +137,15 @@ export const useProjectStore = create<ProjectState>()(
     },
 
     renameNarrative(id, name) {
+      const normalized = name.trim().slice(0, NARRATIVE_NAME_MAX_LENGTH)
       const ts = now()
       set((s) => {
         const narrative = s.narratives[id]
         if (!narrative) return s
-        return { narratives: { ...s.narratives, [id]: { ...narrative, name, updatedAt: ts } } }
+        return { narratives: { ...s.narratives, [id]: { ...narrative, name: normalized, updatedAt: ts } } }
       })
       persist(async () => {
-        await db.narratives.update(id, { name, updatedAt: ts })
+        await db.narratives.update(id, { name: normalized, updatedAt: ts })
       })
     },
 

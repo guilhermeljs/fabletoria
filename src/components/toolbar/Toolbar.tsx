@@ -47,7 +47,7 @@ export default function Toolbar() {
         </div>
 
         {narrative && (
-          <BaseText size="sm" variant="dim">
+          <BaseText size="sm" variant="dim" className="max-w-[24ch] truncate block">
             {narrative.name}
           </BaseText>
         )}

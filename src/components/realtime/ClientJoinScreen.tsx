@@ -46,7 +46,7 @@ export default function ClientJoinScreen() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
-      <div className="flex flex-col items-center gap-tk-6 w-full max-w-md px-tk-6">
+      <div className="flex flex-col items-center gap-tk-6 w-full max-w-lg px-tk-6">
         {/* App wordmark */}
         <div className="text-text-dim text-tk-xs tracking-widest uppercase select-none">
           Fabletoria
