@@ -57,7 +57,6 @@ function statusBadge(invite: InviteEntry) {
 
 function InviteRow({ invite }: { invite: InviteEntry }) {
   const [copied, setCopied] = useState(false)
-
   const canCopy = invite.status === 'waiting-answer' || invite.status === 'preparing'
 
   const handleCopy = () => {
@@ -71,9 +70,7 @@ function InviteRow({ invite }: { invite: InviteEntry }) {
   return (
     <div className="flex items-center gap-tk-3 px-tk-3 py-tk-2 rounded-tk-md bg-bg-header border border-border-main">
       <span className="text-text-dim text-tk-xs font-mono shrink-0">#{invite.idx + 1}</span>
-
       <div className="flex-1 min-w-0">{statusBadge(invite)}</div>
-
       {canCopy && (
         <button
           onClick={handleCopy}
@@ -100,53 +97,51 @@ export default function ShareModal({ onClose }: ShareModalProps) {
 
   const [answerInput, setAnswerInput] = useState('')
   const [isAccepting, setIsAccepting] = useState(false)
-
   const isGenerating = invites.some((i) => i.status === 'preparing')
 
-  const handleAddInvite = () => {
-    addInvite()
-  }
-
+  const handleAddInvite = () => addInvite()
   const handleAccept = async () => {
     if (!answerInput.trim() || isAccepting) return
     setIsAccepting(true)
     await acceptAnswer(answerInput.trim())
     setIsAccepting(false)
-    // Clear input only on success (no answerError set after await)
-    if (!useRealtimeStore.getState().answerError) {
-      setAnswerInput('')
-    }
+    if (!useRealtimeStore.getState().answerError) setAnswerInput('')
   }
-
   const handleAnswerKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleAccept()
   }
-
   const handleStopAndClose = () => {
     stopSharing()
     onClose()
   }
+
+  const workflowSteps = [
+    'Send the invite link to your collaborator.',
+    'Ask them for the confirmation code.',
+    'Paste the code above and accept.',
+    "You're now ready to work!"
+  ]
 
   return (
     <div className="bg-bg-surface border border-border-main rounded-tk-xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden pointer-events-auto">
       {/* Header */}
       <header className="flex items-center justify-between px-tk-5 py-tk-4 border-b border-border-main shrink-0">
         <div className="flex items-center gap-tk-3">
-          <BaseIcon name="Share2" size={18} className="text-brand-primary" />
-          <BaseText size="lg" weight="semibold">
+          <BaseIcon name="Share2" size={18} className="text-text-dim ml-tk-4" />
+          <BaseText size="xs" weight="semibold" className="ml-tk-1 uppercase" variant="dim">
             Share Project
           </BaseText>
         </div>
         <button
           onClick={onClose}
-          className="text-text-dim hover:text-text-main transition-colors"
+          className="text-text-dim hover:text-text-main transition-colors mr-tk-4"
           title="Close"
         >
           <BaseIcon name="X" size={16} />
         </button>
       </header>
 
-      <main className="p-tk-5 flex flex-col gap-tk-5">
+      <main className="p-tk-4 flex flex-col gap-tk-5">
         {/* ── Accept answer input ─────────────────────────────────────────── */}
         <div className="flex flex-col gap-tk-2">
           <BaseText size="sm" weight="semibold">
@@ -171,7 +166,7 @@ export default function ShareModal({ onClose }: ShareModalProps) {
               />
             </div>
             <BaseButton
-              variant="primary"
+              variant="secondary"
               size="md"
               onClick={handleAccept}
               disabled={!answerInput.trim() || isAccepting}
@@ -182,8 +177,18 @@ export default function ShareModal({ onClose }: ShareModalProps) {
           </div>
         </div>
 
+        {/* ── Workflow Steps Accordion ───────────────────────────────────────────── */}
+        <details className="border border-border-main rounded-tk-md p-tk-3 mt-tk-2 text-text-dim">
+          <summary className="cursor-pointer font-semibold text-tk-sm">Step by step</summary>
+          <ol className="list-decimal list-inside mt-tk-2 space-y-tk-1 text-tk-xs text-text-dim">
+            {workflowSteps.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
+        </details>
+
         {/* ── Divider ─────────────────────────────────────────────────────── */}
-        <div className="border-t border-border-main" />
+        <div className="border-t border-border-main mt-tk-4 mb-tk-4" />
 
         {/* ── Invites list ────────────────────────────────────────────────── */}
         <div className="flex flex-col gap-tk-3">
@@ -218,16 +223,14 @@ export default function ShareModal({ onClose }: ShareModalProps) {
       </main>
 
       {/* Footer */}
-      <footer className="flex items-center justify-between gap-tk-3 px-tk-5 py-tk-3 border-t border-border-main bg-bg-header">
-        <BaseButton variant="ghost" size="md" onClick={onClose}>
-          Close
-        </BaseButton>
-        {invites.length > 0 && (
-          <BaseButton variant="danger" size="md" onClick={handleStopAndClose}>
+
+      {invites.length > 0 && (
+        <footer className="flex justify-end gap-tk-3 px-tk-5 py-tk-3 border-t border-border-main bg-bg-header">
+          <BaseButton variant="danger" size="md" className="mr-tk-4" onClick={handleStopAndClose}>
             Stop sharing
           </BaseButton>
-        )}
-      </footer>
+        </footer>
+      )}
     </div>
   )
 }

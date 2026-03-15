@@ -4,13 +4,19 @@ import { ClientPeer } from '../lib/webrtc/peer'
 import { setupHostSync, setupClientSync } from '../lib/webrtc/sync'
 import { encodeBase64Url, decodeBase64Url } from '../lib/webrtc/signaling'
 import { disableProjectStorePersistence } from './project-store'
-import type { AppMode, ConnectionStatus, InviteEntry, InviteStatus, WrappedSdp } from '../lib/webrtc/types'
+import type {
+  AppMode,
+  ConnectionStatus,
+  InviteEntry,
+  InviteStatus,
+  WrappedSdp
+} from '../lib/webrtc/types'
 
 // ── Module-level peer storage ─────────────────────────────────────────────────
 //
 // HostPeer instances are NOT stored in Zustand state because they are mutable
-// objects with callbacks — putting them in Zustand would cause stale-closure
-// issues. The store holds only plain serialisable InviteEntry descriptors.
+// objects with callbacks — storing them would cause stale-closure issues. The store
+// holds only plain serializable InviteEntry descriptors.
 
 const _hostPeers = new Map<number, HostPeer>()
 const _hostCleanups = new Map<number, () => void>()
@@ -27,7 +33,7 @@ export const CURSOR_COLORS = [
   '#fab387', // peach
   '#f38ba8', // red
   '#cba6f7', // mauve
-  '#f9e2af', // yellow
+  '#f9e2af' // yellow
 ]
 
 // ── URL helpers ───────────────────────────────────────────────────────────────
@@ -80,26 +86,17 @@ interface RealtimeState {
   hostCursor: { narrativeId: string; x: number; y: number } | null
 
   // ── Host actions ────────────────────────────────────────────────────────────
-  /**
-   * Creates a new HostPeer, generates an offer, encodes it with the invite
-   * index, and appends an InviteEntry to the list.
-   */
+  /** Creates a new HostPeer, generates an offer, encodes it with the invite index, and appends an InviteEntry. */
   addInvite: () => Promise<void>
 
-  /**
-   * Decodes the wrapped answer, validates the invite index, and routes the raw
-   * SDP answer to the correct HostPeer.
-   */
+  /** Decodes the wrapped answer, validates the invite index, and routes the raw SDP answer to the correct HostPeer. */
   acceptAnswer: (wrappedAnswer: string) => Promise<void>
 
   /** Tears down all host sessions and resets to standalone mode. */
   stopSharing: () => void
 
   // ── Client actions ──────────────────────────────────────────────────────────
-  /**
-   * Decodes the wrapped offer (containing idx), processes it, and returns
-   * the wrapped answer code the client must send back to the host.
-   */
+  /** Decodes the wrapped offer (with idx), processes it, and returns the wrapped answer code to send back to the host. */
   joinAsClient: (wrappedOffer: string) => Promise<string>
 
   /** Client → Host: sends the current mouse position in flow coordinates. */
@@ -114,7 +111,7 @@ function updateInvite(
   status: InviteStatus
 ): void {
   set((s) => ({
-    invites: s.invites.map((inv) => (inv.idx === idx ? { ...inv, status } : inv)),
+    invites: s.invites.map((inv) => (inv.idx === idx ? { ...inv, status } : inv))
   }))
 }
 
@@ -134,7 +131,10 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
 
   async addInvite() {
     const idx = _nextInviteIdx++
-    set((s) => ({ mode: 'host', invites: [...s.invites, { idx, status: 'preparing', shareLink: '' }] }))
+    set((s) => ({
+      mode: 'host',
+      invites: [...s.invites, { idx, status: 'preparing', shareLink: '' }]
+    }))
 
     const peer = new HostPeer()
     _hostPeers.set(idx, peer)
@@ -150,7 +150,7 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
         },
         onCursor: (cursor) => {
           set((s) => ({ clientCursors: { ...s.clientCursors, [idx]: cursor } }))
-        },
+        }
       })
       _hostCleanups.set(idx, cleanup)
       updateInvite(set, idx, 'connected')
@@ -161,7 +161,6 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
       _hostCleanups.delete(idx)
       updateInvite(set, idx, 'disconnected')
       set((s) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [idx]: _removed, ...rest } = s.clientCursors
         return { clientCursors: rest as typeof s.clientCursors }
       })
@@ -169,80 +168,69 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
 
     try {
       const sdp = await peer.generateOffer()
-
-      // Wrap SDP + idx into a single JSON object and encode once
       const wrappedOffer = encodeBase64Url({ sdp, idx } satisfies WrappedSdp)
       const shareLink = buildShareLink(wrappedOffer)
-
       set((s) => ({
         invites: s.invites.map((inv) =>
           inv.idx === idx ? { ...inv, status: 'waiting-answer', shareLink } : inv
-        ),
+        )
       }))
     } catch (err) {
       peer.destroy()
       _hostPeers.delete(idx)
       set((s) => ({
-        invites: s.invites.map((inv) =>
-          inv.idx === idx ? { ...inv, status: 'failed' } : inv
-        ),
-        answerError:
-          err instanceof Error ? err.message : 'Falha ao gerar o convite.',
+        invites: s.invites.map((inv) => (inv.idx === idx ? { ...inv, status: 'failed' } : inv)),
+        answerError: err instanceof Error ? err.message : 'Failed to generate invite.'
       }))
     }
   },
 
   async acceptAnswer(wrappedAnswer) {
     set({ answerError: null })
-
-    // ── 1. Decode ────────────────────────────────────────────────────────────
     let decoded: unknown
     try {
       decoded = decodeBase64Url(wrappedAnswer.trim())
     } catch {
-      set({ answerError: 'Código inválido.' })
+      set({ answerError: 'Invalid code.' })
       return
     }
 
     if (!isValidWrappedSdp(decoded)) {
-      set({ answerError: 'Código inválido.' })
+      set({ answerError: 'Invalid code.' })
       return
     }
 
     const { sdp: answerSdp, idx } = decoded
-
-    // ── 2. Validate invite index ──────────────────────────────────────────────
     const invite = get().invites.find((i) => i.idx === idx)
 
     if (!invite) {
-      set({ answerError: 'Código inválido: índice de convite não encontrado.' })
+      set({ answerError: 'Invalid code: invite index not found.' })
       return
     }
 
     if (invite.status === 'connected') {
-      set({ answerError: 'Este convite já está em uso por um cliente conectado.' })
+      set({ answerError: 'This invite is already used by a connected client.' })
       return
     }
 
     if (invite.status === 'connecting') {
-      set({ answerError: 'Este convite já está sendo estabelecido. Aguarde.' })
+      set({ answerError: 'This invite is already connecting. Please wait.' })
       return
     }
 
     if (invite.status === 'failed' || invite.status === 'disconnected') {
-      set({ answerError: 'Este convite expirou. Gere um novo convite.' })
+      set({ answerError: 'This invite has expired. Generate a new one.' })
       return
     }
 
     if (invite.status === 'preparing') {
-      set({ answerError: 'O convite ainda está sendo preparado. Tente novamente em instantes.' })
+      set({ answerError: 'Invite is still preparing. Try again shortly.' })
       return
     }
 
-    // ── 3. Route to the correct peer ─────────────────────────────────────────
     const peer = _hostPeers.get(idx)
     if (!peer) {
-      set({ answerError: 'Código inválido.' })
+      set({ answerError: 'Invalid code.' })
       return
     }
 
@@ -250,15 +238,13 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
 
     try {
       await peer.acceptAnswer(answerSdp)
-      // ICE proceeds automatically; peer.onConnected handles the rest
     } catch {
       updateInvite(set, idx, 'failed')
-      set({ answerError: 'Código inválido. Verifique e tente novamente.' })
+      set({ answerError: 'Invalid code. Please check and try again.' })
     }
   },
 
   stopSharing() {
-    // Tear down all host peers
     for (const cleanup of _hostCleanups.values()) cleanup()
     for (const peer of _hostPeers.values()) peer.destroy()
     _hostPeers.clear()
@@ -269,7 +255,7 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
       mode: 'standalone',
       invites: [],
       answerError: null,
-      clientCursors: {},
+      clientCursors: {}
     })
   },
 
@@ -278,7 +264,6 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
   async joinAsClient(wrappedOffer) {
     set({ mode: 'client', clientStatus: 'preparing', clientError: null })
 
-    // ── Decode the wrapped offer ──────────────────────────────────────────────
     let decoded: unknown
     try {
       decoded = decodeBase64Url(wrappedOffer)
@@ -286,7 +271,7 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
       set({
         mode: 'standalone',
         clientStatus: 'failed',
-        clientError: 'Link inválido: não foi possível decodificar o convite.',
+        clientError: 'Invalid link: could not decode invite.'
       })
       throw new Error('Invalid offer encoding')
     }
@@ -295,31 +280,23 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
       set({
         mode: 'standalone',
         clientStatus: 'failed',
-        clientError: 'Link inválido: formato de convite não reconhecido.',
+        clientError: 'Invalid link: unrecognized invite format.'
       })
       throw new Error('Invalid offer format')
     }
 
     const { sdp: offerSdp, idx } = decoded
-
-    // ── Process the offer and generate the answer ─────────────────────────────
     const peer = new ClientPeer()
     _clientPeer = peer
 
     peer.onConnected = () => {
       disableProjectStorePersistence()
-      _clientCleanup = setupClientSync(peer, {
-        onCursor: (cursor) => set({ hostCursor: cursor }),
-      })
+      _clientCleanup = setupClientSync(peer, { onCursor: (cursor) => set({ hostCursor: cursor }) })
       set({ clientStatus: 'connected' })
     }
 
     peer.onDisconnected = () => {
-      // While in 'waiting-answer' the host hasn't accepted yet, so ICE times
-      // out on the client side — this is expected and not a real failure.
-      // Ignore the event; the connection will proceed once the host accepts.
       if (get().clientStatus === 'waiting-answer') return
-
       _clientCleanup?.()
       _clientCleanup = null
       _clientPeer = null
@@ -328,16 +305,13 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
 
     try {
       const answerSdp = await peer.receiveOffer(offerSdp)
-
-      // Wrap SDP + idx into a single JSON object and encode once
       const answerCode = encodeBase64Url({ sdp: answerSdp, idx } satisfies WrappedSdp)
-
       set({ answerCode, clientStatus: 'waiting-answer' })
       return answerCode
     } catch (err) {
       peer.destroy()
       _clientPeer = null
-      const message = err instanceof Error ? err.message : 'Falha ao processar o convite.'
+      const message = err instanceof Error ? err.message : 'Failed to process invite.'
       set({ mode: 'standalone', clientStatus: 'failed', clientError: message })
       throw err
     }
@@ -352,7 +326,7 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
         peer.send({ type: 'cursor', narrativeId, x, y })
       }
     }
-  },
+  }
 }))
 
 // ── Convenience selectors ─────────────────────────────────────────────────────
