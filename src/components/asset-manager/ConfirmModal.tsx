@@ -1,3 +1,6 @@
+import { BaseButton } from '../primitives/BaseButton'
+import { BaseText } from '../primitives/BaseText'
+
 interface Props {
   title: string
   body: string
@@ -10,26 +13,24 @@ interface Props {
 export default function ConfirmModal({ title, body, confirmLabel, onConfirm, onCancel, danger }: Props) {
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50">
-      <div className="bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4">
-        <h2 className="text-sm font-semibold text-zinc-100 mb-2">{title}</h2>
-        <p className="text-xs text-zinc-400 mb-5">{body}</p>
-        <div className="flex items-center justify-end gap-3">
-          <button
-            onClick={onCancel}
-            className="px-4 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors"
-          >
+      <div className="bg-bg-surface border border-border-main rounded-tk-xl shadow-2xl p-tk-6 max-w-sm w-full mx-4">
+        <BaseText size="sm" weight="semibold" className="mb-tk-2">
+          {title}
+        </BaseText>
+        <BaseText size="xs" variant="dim" className="mb-tk-5">
+          {body}
+        </BaseText>
+        <div className="flex items-center justify-end gap-tk-3">
+          <BaseButton variant="ghost" size="sm" onClick={onCancel}>
             Cancel
-          </button>
-          <button
+          </BaseButton>
+          <BaseButton
+            variant={danger ? 'danger' : 'primary'}
+            size="sm"
             onClick={onConfirm}
-            className={`px-4 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-              danger
-                ? 'bg-red-700 text-white hover:bg-red-600'
-                : 'bg-violet-600 text-white hover:bg-violet-500'
-            }`}
           >
             {confirmLabel}
-          </button>
+          </BaseButton>
         </div>
       </div>
     </div>

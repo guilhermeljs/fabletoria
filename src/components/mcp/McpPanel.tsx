@@ -1,3 +1,7 @@
+import { BaseButton } from '../primitives/BaseButton'
+import { BaseBadge } from '../primitives/BaseBadge'
+import { BaseIcon } from '../primitives/BaseIcon'
+import { BaseText } from '../primitives/BaseText'
 import { useMcp } from '../../hooks/useMcp'
 import type { McpServerStatus } from '../../stores/mcp-store'
 import { copyToClipboard } from '../../lib/clipboard'
@@ -6,18 +10,35 @@ interface Props {
   onClose: () => void
 }
 
-function StatusDot({ status }: { status: McpServerStatus }) {
-  const colors: Record<McpServerStatus, string> = {
-    stopped: 'bg-zinc-500',
-    starting: 'bg-yellow-400 animate-pulse',
-    running: 'bg-green-400',
-    stopping: 'bg-orange-400 animate-pulse'
-  }
-  return <span className={`inline-block w-2 h-2 rounded-full ${colors[status]}`} />
-}
-
 function statusLabel(status: McpServerStatus): string {
   return { stopped: 'Not running', starting: 'Starting…', running: 'Running', stopping: 'Stopping…' }[status]
+}
+
+function statusBadge(status: McpServerStatus) {
+  const variants = {
+    stopped: 'default',
+    starting: 'warning',
+    running: 'success',
+    stopping: 'warning'
+  } as const
+
+  const extraClasses = {
+    stopped: '',
+    starting: 'animate-pulse',
+    running: '',
+    stopping: 'animate-pulse'
+  } as const
+
+  return (
+    <BaseBadge
+      variant={variants[status]}
+      size="xs"
+      rounded
+      className={extraClasses[status]}
+    >
+      {statusLabel(status)}
+    </BaseBadge>
+  )
 }
 
 export default function McpPanel({ onClose }: Props) {
@@ -33,105 +54,121 @@ export default function McpPanel({ onClose }: Props) {
     await copyToClipboard(text)
   }
 
-
   return (
-    <div className="absolute top-full right-0 mt-2 w-80 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 p-4 flex flex-col gap-3">
+    <div className="absolute top-10 right-0 w-80 bg-bg-surface border border-border-main rounded-tk-xl shadow-2xl z-50 px-tk-4 pt-tk-2 pb-tk-4 flex flex-col gap-tk-3">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-zinc-100">MCP Server</span>
-          <StatusDot status={status} />
-          <span className="text-xs text-zinc-400">{statusLabel(status)}</span>
+        <div className="flex items-center gap-tk-2">
+          <BaseText size="sm" weight="semibold">
+            MCP Server
+          </BaseText>
+          {statusBadge(status)}
         </div>
-        <button
+
+        <BaseButton
+          variant="ghost"
+          size="sm"
           onClick={onClose}
-          className="text-zinc-500 hover:text-zinc-300 text-sm leading-none"
           aria-label="Close MCP panel"
+          className="h-8 w-8 p-0"
         >
-          ✕
-        </button>
+          <BaseIcon name="X" size={16} />
+        </BaseButton>
       </div>
 
       {/* Connection URL */}
       {isRunning && url && (
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-zinc-400">Connection URL</span>
-          <div className="flex items-center gap-2 bg-zinc-800 rounded-lg px-3 py-2">
-            <code className="text-xs text-green-400 flex-1 truncate">{url}</code>
-            <button
-              onClick={copyUrl}
-              className="text-xs text-zinc-400 hover:text-zinc-200 shrink-0"
-              title="Copy URL"
-            >
+        <div className="flex flex-col gap-tk-2">
+          <BaseText size="xs" variant="dim">
+            Connection URL
+          </BaseText>
+
+          <div className="flex items-center gap-tk-2 bg-bg-header rounded-tk-lg px-tk-3 py-tk-2">
+            <code className="flex-1 truncate font-content text-tk-xs text-text-dim">
+              {url}
+            </code>
+            <BaseButton size="sm" variant="ghost" onClick={copyUrl} className="shrink-0">
               Copy
-            </button>
+            </BaseButton>
           </div>
 
-
-          <p className="text-xs text-zinc-500 mt-2">
+          <BaseText size="xs" variant="dim" className="mt-tk-2">
             Paste this command to use in Claude
-          </p>
-          <div className="flex items-center gap-2 bg-zinc-800 rounded-lg px-3 py-2">
-            <code className="text-xs text-zinc-200 flex-1 truncate">claude mcp add fabletoria --transport sse --scope user http://localhost:7700/sse</code>
-            <button
+          </BaseText>
+
+          <div className="flex items-center gap-tk-2 bg-bg-header rounded-tk-lg px-tk-3 py-tk-2">
+            <code className="flex-1 truncate font-content text-tk-xs text-text-dim">
+              claude mcp add fabletoria --transport sse --scope user http://localhost:7700/sse
+            </code>
+            <BaseButton
+              size="sm"
+              variant="ghost"
               onClick={() => copyText('claude mcp add fabletoria --transport sse --scope user http://localhost:7700/sse')}
-              className="text-xs text-zinc-400 hover:text-zinc-200 shrink-0"
-              title="Copy command"
+              className="shrink-0"
             >
               Copy
-            </button>
+            </BaseButton>
           </div>
 
-          <p className="text-xs text-zinc-500 mt-2">
+          <BaseText size="xs" variant="dim" className="mt-tk-2">
             Paste this command to use in Gemini
-          </p>
-          <div className="flex items-center gap-2 bg-zinc-800 rounded-lg px-3 py-2">
-            <code className="text-xs text-zinc-200 flex-1 truncate">gemini mcp add --transport sse fabletoria http://localhost:7700/sse</code>
-            <button
+          </BaseText>
+
+          <div className="flex items-center gap-tk-2 bg-bg-header rounded-tk-lg px-tk-3 py-tk-2">
+            <code className="flex-1 truncate font-content text-tk-xs text-text-dim">
+              gemini mcp add --transport sse fabletoria http://localhost:7700/sse
+            </code>
+            <BaseButton
+              size="sm"
+              variant="ghost"
               onClick={() => copyText('gemini mcp add --transport sse fabletoria http://localhost:7700/sse')}
-              className="text-xs text-zinc-400 hover:text-zinc-200 shrink-0"
-              title="Copy command"
+              className="shrink-0"
             >
               Copy
-            </button>
+            </BaseButton>
           </div>
-
         </div>
       )}
 
       {/* Error */}
       {error && (
-        <div className="bg-red-950 border border-red-800 rounded-lg px-3 py-2">
-          <p className="text-xs text-red-400">{error}</p>
+        <div className="bg-status-error/10 border border-status-error rounded-tk-lg px-tk-3 py-tk-2">
+          <BaseText size="xs" variant="error">
+            {error}
+          </BaseText>
         </div>
       )}
 
       {/* Start / Stop */}
-      <div className="flex gap-2">
+      <div className="flex gap-tk-2">
         {!isRunning ? (
-          <button
+          <BaseButton
+            variant="primary"
+            size="md"
+            fullWidth
+            isLoading={isBusy}
             onClick={start}
-            disabled={isBusy}
-            className="flex-1 px-3 py-2 text-sm font-medium bg-violet-600 text-white rounded-lg hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {status === 'starting' ? 'Starting…' : 'Start MCP'}
-          </button>
+          </BaseButton>
         ) : (
-          <button
+          <BaseButton
+            variant="secondary"
+            size="md"
+            fullWidth
+            isLoading={isBusy}
             onClick={stop}
-            disabled={isBusy}
-            className="flex-1 px-3 py-2 text-sm font-medium bg-zinc-700 text-zinc-200 rounded-lg hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {isBusy ? 'Stopping…' : 'Stop MCP'}
-          </button>
+          </BaseButton>
         )}
       </div>
 
       {/* Info */}
       {!isRunning && !error && (
-        <p className="text-xs text-zinc-500">
+        <BaseText size="xs" variant="dim">
           Start the MCP server to enable AI-assisted authoring via compatible clients.
-        </p>
+        </BaseText>
       )}
     </div>
   )
