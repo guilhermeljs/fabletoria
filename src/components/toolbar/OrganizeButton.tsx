@@ -1,10 +1,25 @@
+import { generateHTML } from '@tiptap/core'
+import StarterKit from '@tiptap/starter-kit'
 import type { StoryNode } from '../../lib/types'
 import { useUIStore } from '../../stores/ui-store'
 import { useProjectStore } from '../../stores/project-store'
 import { useSettingsStore } from '../../stores/settings-store'
-import { calculateNodeSize } from '../../lib/layout-utils'
+import { measureNodeSize } from '../../lib/layout-utils'
+import { VariableNode } from '../../lib/tiptap-variable-node'
+import { AssetImageNode } from '../../extensions/AssetImageNode'
+import { AssetFileNode } from '../../extensions/AssetFileNode'
 import { BaseButton } from '../primitives/BaseButton'
 import { BaseIcon } from '../primitives/BaseIcon'
+
+const EXTENSIONS = [StarterKit, VariableNode, AssetImageNode, AssetFileNode]
+
+function toHtml(content: string): string {
+  try {
+    return generateHTML(JSON.parse(content) as object, EXTENSIONS)
+  } catch {
+    return ''
+  }
+}
 
 /** Calculates optimal handle pair using aspect-ratio weighting. */
 function calculateBestHandles(source: StoryNode, target: StoryNode): { sourceHandle: string; targetHandle: string } {
@@ -44,7 +59,7 @@ export default function OrganizeButton() {
   const updateNodeSize = useProjectStore((s) => s.updateNodeSize)
   const updateConnectionHandle = useProjectStore((s) => s.updateConnectionHandle)
   
-  const { organizeRatio, organizeMaxWidth, organizeHGap, organizeVGap } = useSettingsStore()
+  const { organizeMaxWidth, organizeHGap, organizeVGap } = useSettingsStore()
 
   const handleOrganize = () => {
     if (!activeNarrativeId) return
@@ -99,7 +114,7 @@ export default function OrganizeButton() {
 
     // 1. Auto-resize in localNodes
     Object.values(localNodes).forEach(n => {
-      const { width, height } = calculateNodeSize(n.content, organizeRatio, organizeMaxWidth)
+      const { width, height } = measureNodeSize(toHtml(n.content), organizeMaxWidth)
       n.width = width
       n.height = height
     })
