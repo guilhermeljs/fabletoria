@@ -69,7 +69,7 @@ export const useSettingsStore = create<SettingsState>()(
           const settings = await db.settings.get('global')
           return settings ? JSON.stringify({ state: settings }) : null
         },
-        setItem: async (name, value) => {
+        setItem: async (_name, value) => {
           const parsed = JSON.parse(value)
           const { state } = parsed
           await db.settings.put({
