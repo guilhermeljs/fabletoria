@@ -16,6 +16,7 @@ import {
 } from '@xyflow/react'
 import { useProjectStore } from '../../stores/project-store'
 import { useUIStore } from '../../stores/ui-store'
+import { useContextMenuStore } from '../../stores/context-menu-store'
 import StoryNodeComponent from './StoryNodeComponent'
 import type { EntityId } from '../../lib/types'
 import NodeEdge from './NodeEdge'
@@ -25,16 +26,6 @@ const nodeTypes = { storyNode: StoryNodeComponent }
 const edgeTypes = { default: NodeEdge }
 
 const VARIATION_DRAG_TYPE = 'application/fabletoria-variation'
-
-interface ContextMenu {
-  type: 'node' | 'pane'
-  nodeId?: string
-  x: number
-  y: number
-  flowX?: number
-  flowY?: number
-  sourceNodeId?: string
-}
 
 interface NarrativeCanvasProps {
   narrativeId: EntityId
@@ -47,7 +38,7 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
 
   const selection = useUIStore((s) => s.selection)
   const { screenToFlowPosition } = useReactFlow()
-  const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null)
+  const openMenu = useContextMenuStore((s) => s.open)
   const containerRef = useRef<HTMLDivElement>(null)
   const pendingConnectionRef = useRef<{ sourceNodeId: string } | null>(null)
 
@@ -71,8 +62,9 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
 
       const variation = n.variationId ? variations[n.variationId] : undefined;
       const prev = cached.get(n.id);
+      const isStartNode = narrative?.startNodeId === n.id
 
-      if (prev && prev.source === n) {
+      if (prev && prev.source === n && prev.rfNode.data.isStartNode === isStartNode) {
         result.push(prev.rfNode);
         continue;
       }
@@ -86,7 +78,7 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
         data: {
           content: n.content,
           title: n.title ?? '',
-          isStartNode: narrative?.startNodeId === n.id,
+          isStartNode,
           variationId: n.variationId ?? undefined,
           variationName: variation?.name,
         },
@@ -204,20 +196,6 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
     [store]
   )
 
-  const onNodeContextMenu = useCallback((e: React.MouseEvent, node: Node) => {
-    e.preventDefault()
-    setContextMenu({ type: 'node', nodeId: node.id, x: e.clientX, y: e.clientY })
-  }, [])
-
-  const onPaneContextMenu = useCallback((e: MouseEvent | React.MouseEvent) => {
-    e.preventDefault()
-    setContextMenu({ type: 'pane', x: (e as React.MouseEvent).clientX, y: (e as React.MouseEvent).clientY })
-  }, [])
-
-  const onPaneClick = useCallback(() => {
-    setContextMenu(null)
-  }, [])
-
   const handleAddNode = useCallback(
     (clientX: number, clientY: number) => {
       const position = screenToFlowPosition({ x: clientX, y: clientY })
@@ -225,12 +203,42 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
       if(rfNodes?.length === 0) {
         store.setStartNode(nodeId.narrativeId, nodeId.id)
       }
-      setContextMenu(null)
     },
     [store, narrativeId, screenToFlowPosition]
   )
 
-  // Edge dropped on empty space → show picker menu
+  const onNodeContextMenu = useCallback((e: React.MouseEvent, node: Node) => {
+    e.preventDefault()
+    openMenu(e.clientX, e.clientY, [
+      {
+        label: 'Set as Start Node',
+        icon: 'Play',
+        onClick: () => store.setStartNode(narrativeId, node.id),
+      },
+      { type: 'separator' },
+      {
+        label: 'Delete Node',
+        icon: 'Trash2',
+        variant: 'danger',
+        onClick: () => store.deleteNode(node.id),
+      },
+    ])
+  }, [openMenu, store, narrativeId])
+
+  const onPaneContextMenu = useCallback((e: MouseEvent | React.MouseEvent) => {
+    e.preventDefault()
+    const clientX = (e as React.MouseEvent).clientX
+    const clientY = (e as React.MouseEvent).clientY
+    openMenu(clientX, clientY, [
+      {
+        label: 'Add Story Piece',
+        icon: 'Plus',
+        onClick: () => handleAddNode(clientX, clientY),
+      },
+    ])
+  }, [openMenu, handleAddNode])
+
+  // Edge dropped on empty space → create a new connected node
   const onConnectEnd = useCallback(
     (event: MouseEvent | TouchEvent, connectionState: FinalConnectionState) => {
       if (connectionState.isValid) return
@@ -277,13 +285,6 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
     [store, narrativeId, screenToFlowPosition]
   )
 
-  // Close context menu on outside click
-  useEffect(() => {
-    const handler = () => setContextMenu(null)
-    document.addEventListener('click', handler)
-    return () => document.removeEventListener('click', handler)
-  }, [])
-
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
       <ReactFlow
@@ -297,7 +298,6 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
         onNodesChange={onNodesChange}
         onNodeContextMenu={onNodeContextMenu}
         onPaneContextMenu={onPaneContextMenu}
-        onPaneClick={onPaneClick}
         multiSelectionKeyCode="Shift"
         selectionOnDrag
         edgesFocusable
@@ -315,80 +315,17 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
       >
         <Background color="#020617" gap={20} />
       </ReactFlow>
-      
+
       {rfNodes.length === 0 && rfEdges.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center text-gray-500 pointer-events-none">
           Right-click to add the first story piece
         </div>
       )}
-      
+
       <CursorTracker narrativeId={narrativeId} containerRef={containerRef}></CursorTracker>
       <RemoteCursors narrativeId={narrativeId} key={"remote"}/>
-
-      {contextMenu && (
-        <div
-          style={{
-            position: 'fixed',
-            top: contextMenu.y,
-            left: contextMenu.x,
-            background: '#1e1e2e',
-            border: '1px solid #4a4a6a',
-            borderRadius: 6,
-            padding: '4px 0',
-            zIndex: 1000,
-            minWidth: 160,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.5)'
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {contextMenu.type === 'pane' && (
-            <button
-              className="context-menu-item"
-              style={menuItemStyle}
-              onClick={() => handleAddNode(contextMenu.x, contextMenu.y)}
-            >
-              Add Story Piece
-            </button>
-          )}
-          {contextMenu.type === 'node' && contextMenu.nodeId && (
-            <>
-              <button
-                style={menuItemStyle}
-                onClick={() => {
-                  store.setStartNode(narrativeId, contextMenu.nodeId!)
-                  setContextMenu(null)
-                }}
-              >
-                Set as Start Node
-              </button>
-              <div style={{ borderTop: '1px solid #4a4a6a', margin: '2px 0' }} />
-              <button
-                style={{ ...menuItemStyle, color: '#f38ba8' }}
-                onClick={() => {
-                  store.deleteNode(contextMenu.nodeId!)
-                  setContextMenu(null)
-                }}
-              >
-                Delete Node
-              </button>
-            </>
-          )}
-        </div>
-      )}
     </div>
   )
-}
-
-const menuItemStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '7px 14px',
-  background: 'none',
-  border: 'none',
-  color: '#cdd6f4',
-  fontSize: 13,
-  textAlign: 'left',
-  cursor: 'pointer'
 }
 
 export default function NarrativeCanvas({ narrativeId }: NarrativeCanvasProps) {

@@ -3,6 +3,7 @@ import { useProjectStore } from '../../stores/project-store'
 import { useUIStore } from '../../stores/ui-store'
 import type { EntityId, Component } from '../../lib/types'
 import { useModalStore } from '../../stores/modal-store'
+import { useContextMenuStore } from '../../stores/context-menu-store'
 import { BaseText } from '../primitives/BaseText'
 import { BaseButton } from '../primitives/BaseButton'
 import { BaseIcon } from '../primitives/BaseIcon'
@@ -25,17 +26,12 @@ export default function ComponentTree() {
   const setSelection = useUIStore((s) => s.setSelection)
   const openInspector = useUIStore((s) => s.openInspector)
   const modalStore = useModalStore()
+  const openMenu = useContextMenuStore((s) => s.open)
 
   const [expandedComponents, setExpandedComponents] = useState<Set<EntityId>>(new Set())
   const [editingId, setEditingId] = useState<{ type: 'component' | 'variation'; id: EntityId } | null>(null)
   const [editValue, setEditValue] = useState('')
   const [editError, setEditError] = useState('')
-  const [contextMenu, setContextMenu] = useState<{
-    type: 'component' | 'variation'
-    id: EntityId
-    x: number
-    y: number
-  } | null>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -45,12 +41,6 @@ export default function ComponentTree() {
       inputRef.current.select()
     }
   }, [editingId])
-
-  useEffect(() => {
-    const handler = () => setContextMenu(null)
-    document.addEventListener('click', handler)
-    return () => document.removeEventListener('click', handler)
-  }, [])
 
   function toggleExpand(id: EntityId) {
     setExpandedComponents((prev) => {
@@ -154,7 +144,48 @@ export default function ComponentTree() {
                 onCancelEdit={() => setEditingId(null)}
                 onContextMenu={(e) => {
                   e.preventDefault()
-                  setContextMenu({ type: 'component', id: component.id, x: e.clientX, y: e.clientY })
+                  openMenu(e.clientX, e.clientY, [
+                    {
+                      label: 'Rename',
+                      icon: 'Pencil',
+                      onClick: () => {
+                        const c = components[component.id]
+                        if (c) startEditComponent(c)
+                      },
+                    },
+                    {
+                      label: 'Edit Schema',
+                      icon: 'Settings2',
+                      onClick: () => {
+                        const c = components[component.id]
+                        if (c) {
+                          modalStore.openModal('ComponentSchema', {
+                            component: c,
+                            onSave: (name, schema, defaults) => {
+                              renameComponent(c.id, name)
+                              updateComponentSchema(c.id, schema)
+                              updateComponentDefaults(c.id, defaults)
+                              modalStore.closeModal()
+                            },
+                          })
+                        }
+                      },
+                    },
+                    { type: 'separator' },
+                    {
+                      label: 'Delete',
+                      icon: 'Trash2',
+                      variant: 'danger',
+                      onClick: () => {
+                        modalStore.openModal('Confirm', {
+                          title: 'Delete Component',
+                          message: 'Are you sure you want to delete this component and all its variations? This action cannot be undone.',
+                          confirmLabel: 'Delete Component',
+                          onConfirm: () => deleteComponent(component.id),
+                        })
+                      },
+                    },
+                  ])
                 }}
                 onAddVariation={() => handleAddVariation(component.id)}
                 inputRef={inputRef as React.RefObject<HTMLInputElement>}
@@ -182,7 +213,31 @@ export default function ComponentTree() {
                       onCancelEdit={() => { setEditingId(null); setEditError(''); }}
                       onContextMenu={(e) => {
                         e.preventDefault()
-                        setContextMenu({ type: 'variation', id: variation.id, x: e.clientX, y: e.clientY })
+                        openMenu(e.clientX, e.clientY, [
+                          {
+                            label: 'Rename',
+                            icon: 'Pencil',
+                            onClick: () => {
+                              setEditingId({ type: 'variation', id: variation.id })
+                              setEditValue(variation.name)
+                              setEditError('')
+                            },
+                          },
+                          { type: 'separator' },
+                          {
+                            label: 'Delete',
+                            icon: 'Trash2',
+                            variant: 'danger',
+                            onClick: () => {
+                              modalStore.openModal('Confirm', {
+                                title: 'Delete Variation',
+                                message: 'Are you sure you want to delete this variation? This action cannot be undone.',
+                                confirmLabel: 'Delete Variation',
+                                onConfirm: () => deleteVariation(variation.id),
+                              })
+                            },
+                          },
+                        ])
                       }}
                       inputRef={inputRef as React.RefObject<HTMLInputElement>}
                     />
@@ -203,99 +258,6 @@ export default function ComponentTree() {
           </li>
         )}
       </ul>
-
-      {contextMenu && (
-        <div
-          style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, zIndex: 1000 }}
-          className="bg-bg-surface border border-border-main rounded-tk-md py-tk-1 shadow-xl min-w-[144px]"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {contextMenu.type === 'component' && (
-            <>
-              <BaseButton
-                variant="ghost" size="sm" className="w-full justify-start"
-                onClick={() => {
-                  const c = components[contextMenu.id]
-                  if (c) startEditComponent(c)
-                  setContextMenu(null)
-                }}
-              >
-                Rename
-              </BaseButton>
-              <BaseButton
-                variant="ghost" size="sm" className="w-full justify-start"
-                onClick={() => {
-                  const c = components[contextMenu.id]
-                  if (c) {
-                    modalStore.openModal('ComponentSchema', {
-                      component: c,
-                      onSave: (name, schema, defaults) => {
-                        renameComponent(c.id, name)
-                        updateComponentSchema(c.id, schema)
-                        updateComponentDefaults(c.id, defaults)
-                        modalStore.closeModal()
-                      }
-                    })
-                  }
-                  setContextMenu(null)
-                }}
-              >
-                Edit Schema
-              </BaseButton>
-              <BaseButton
-                variant="ghost" size="sm" className="w-full justify-start text-status-error hover:text-status-error"
-                onClick={() => {
-                  modalStore.openModal('Confirm', {
-                    title: 'Delete Component',
-                    message: 'Are you sure you want to delete this component and all its variations? This action cannot be undone.',
-                    confirmLabel: 'Delete Component',
-                    onConfirm: () => {
-                      deleteComponent(contextMenu.id)
-                    }
-                  })
-                  setContextMenu(null)
-                }}
-              >
-                Delete
-              </BaseButton>
-            </>
-          )}
-          {contextMenu.type === 'variation' && (
-            <>
-              <BaseButton
-                variant="ghost" size="sm" className="w-full justify-start"
-                onClick={() => {
-                  const v = variations[contextMenu.id]
-                  if (v) {
-                    setEditingId({ type: 'variation', id: v.id })
-                    setEditValue(v.name)
-                    setEditError('')
-                  }
-                  setContextMenu(null)
-                }}
-              >
-                Rename
-              </BaseButton>
-              <BaseButton
-                variant="ghost" size="sm" className="w-full justify-start text-status-error hover:text-status-error"
-                onClick={() => {
-                  modalStore.openModal('Confirm', {
-                    title: 'Delete Variation',
-                    message: 'Are you sure you want to delete this variation? This action cannot be undone.',
-                    confirmLabel: 'Delete Variation',
-                    onConfirm: () => {
-                      deleteVariation(contextMenu.id)
-                    }
-                  })
-                  setContextMenu(null)
-                }}
-              >
-                Delete
-              </BaseButton>
-            </>
-          )}
-        </div>
-      )}
     </div>
   )
 }

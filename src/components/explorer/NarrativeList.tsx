@@ -5,10 +5,11 @@ import { useRealtimeStore } from '../../stores/realtime-store'
 import type { EntityId, Narrative } from '../../lib/types';
 import { NarrativeListItem } from './NarrativeListItem';
 import { useModalStore } from '../../stores/modal-store';
+import { useContextMenuStore } from '../../stores/context-menu-store';
 import { BaseText } from '../primitives/BaseText';
 import { BaseButton } from '../primitives/BaseButton';
 import { BaseIcon } from '../primitives/BaseIcon';
- 
+
 export default function NarrativeList() {
   const narratives = useProjectStore((s) => s.narratives)
   const createNarrative = useProjectStore((s) => s.createNarrative)
@@ -17,6 +18,7 @@ export default function NarrativeList() {
   const activeNarrativeId = useUIStore((s) => s.activeNarrativeId)
   const setActiveNarrative = useUIStore((s) => s.setActiveNarrative)
   const modalStore = useModalStore()
+  const openMenu = useContextMenuStore((s) => s.open)
 
   const realtimeMode = useRealtimeStore((s) => s.mode)
   const clientCursors = useRealtimeStore((s) => s.clientCursors)
@@ -36,7 +38,6 @@ export default function NarrativeList() {
 
   const [editingId, setEditingId] = useState<EntityId | null>(null)
   const [editValue, setEditValue] = useState('')
-  const [contextMenu, setContextMenu] = useState<{ id: EntityId; x: number; y: number } | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const sorted = Object.values(narratives)
@@ -49,12 +50,6 @@ export default function NarrativeList() {
       inputRef.current.select()
     }
   }, [editingId])
-
-  useEffect(() => {
-    const handler = () => setContextMenu(null)
-    document.addEventListener('click', handler)
-    return () => document.removeEventListener('click', handler)
-  }, [])
 
   function startEdit(narrative: Narrative) {
     setEditingId(narrative.id)
@@ -77,7 +72,6 @@ export default function NarrativeList() {
         deleteNarrative(id)
       }
     })
-    setContextMenu(null)
   }
 
   return (
@@ -118,7 +112,23 @@ export default function NarrativeList() {
             onCancelEdit={() => setEditingId(null)}
             onContextMenu={(e: React.MouseEvent) => {
               e.preventDefault()
-              setContextMenu({ id: narrative.id, x: e.clientX, y: e.clientY })
+              openMenu(e.clientX, e.clientY, [
+                {
+                  label: 'Rename',
+                  icon: 'Pencil',
+                  onClick: () => {
+                    const n = narratives[narrative.id]
+                    if (n) startEdit(n)
+                  },
+                },
+                { type: 'separator' },
+                {
+                  label: 'Delete',
+                  icon: 'Trash2',
+                  variant: 'danger',
+                  onClick: () => handleDelete(narrative.id),
+                },
+              ])
             }}
             inputRef={inputRef as React.RefObject<HTMLInputElement>}
           />
@@ -131,35 +141,6 @@ export default function NarrativeList() {
           </li>
         )}
       </ul>
-
-      {contextMenu && (
-        <div
-          style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, zIndex: 1000 }}
-          className="bg-bg-surface border border-border-main rounded-tk-md py-tk-1 shadow-xl min-w-[128px]"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start"
-            onClick={() => {
-              const n = narratives[contextMenu.id]
-              if (n) startEdit(n)
-              setContextMenu(null)
-            }}
-          >
-            Rename
-          </BaseButton>
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start text-status-error hover:text-status-error"
-            onClick={() => handleDelete(contextMenu.id)}
-          >
-            Delete
-          </BaseButton>
-        </div>
-      )}
     </div>
   )
 }

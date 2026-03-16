@@ -16,6 +16,7 @@ import { ToastContainer } from './components/layout/ToastContainer'
 import { MobileUnsupportedOverlay } from './components/layout/MobileUnsupported'
 import ClientJoinScreen from './components/realtime/ClientJoinScreen'
 import { FeedbackProvider } from './components/feedback/FeedbackProvider'
+import { ContextMenuContainer } from './components/layout/ContextMenuContainer'
 
 const IS_CLIENT_MODE = Boolean(getOfferFromUrl())
 
@@ -181,6 +182,7 @@ export default function App() {
 
         <ModalContainer />
         <ToastContainer />
+        <ContextMenuContainer />
 
         {showClientScreen && <ClientJoinScreen />}
       </div>
