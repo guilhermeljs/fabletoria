@@ -17,7 +17,7 @@
     </linearGradient>
 
     <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
       <feComposite in="SourceGraphic" in2="blur" operator="over" />
     </filter>
   </defs>
@@ -43,7 +43,7 @@
     </text>
 
     <text x="0" y="55" fill="#94a3b8" text-anchor="middle" style="font: 400 14px 'Inter', sans-serif; letter-spacing: 5px; text-transform: uppercase;">
-      NARRATIVE DESIGN TOOL. FREE FOREVER.
+      Your always-free narrative design tool.
     </text>
   </g>
 </svg>

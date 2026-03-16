@@ -1,9 +1,5 @@
 <div align="center">
 
-# Fabletoria
-
-**Your always-free narrative design system**
-
 ![Presentation Card](./fabletoria.svg)
 
 [![CI](https://github.com/guilhermeljs/fabletoria/actions/workflows/ci.yml/badge.svg)](https://github.com/guilhermeljs/fabletoria/actions)
@@ -18,19 +14,18 @@
 </div>
 
 ---
-
 ## What is Fabletoria?
 
 [Fabletoria](https://fabletoria.com) is a **free, open-source narrative design system** built for writers, game designers, and creative hobbyists who want to build and play interactive stories without bloat, paywalls, or complex setups.
 
-You design your narrative visually, then **play it directly** inside the same tool enabling you to *feel your narrative*. 
-No account required. No subscription. No hidden limits. Export to any place you want to.
+You design your narrative visually, then **play it directly** inside the same tool enabling you to *feel your narrative*. The editor runs entirely client-side. Your stories live on your machine and yours alone.
+
+No account required. No subscription. No hidden limits. Export anywhere you want.
 
 > **Why Fabletoria?** Most narrative tools are either too rigid, too expensive, or built for solo work.
 > Fabletoria is free forever, designed for teams to collaborate from day one, and simple enough to
 > learn in minutes — yet expressive enough to tell complex, branching stories. We're building this
 > in the open, with the community: feedback and feature requests are always welcome through GitHub Issues.
-
 ---
 
 ## Features
