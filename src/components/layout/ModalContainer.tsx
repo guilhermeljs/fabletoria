@@ -3,8 +3,7 @@ import { useModalStore, ModalInstance } from '../../stores/modal-store';
 import { ModalPortal } from './PortalProvider';
 import { BaseBackdrop } from '../primitives/BaseBackdrop';
 
-// Import modals here
-import SettingsModal from '../toolbar/SettingsModal';
+import SettingsModal from '../settings/SettingsModal';
 import AssetManagerModal from '../asset-manager/AssetManagerModal';
 import ComponentSchemaModal from '../explorer/ComponentSchemaModal';
 import ConfirmModal from './ConfirmModal';

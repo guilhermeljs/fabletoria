@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useMemo, useState } from 'react'
+import { useSettingsStore } from '../../stores/settings-store'
 import { FeedbackModal } from './FeedbackModal'
 
 interface FeedbackContextValue {
@@ -17,22 +18,35 @@ export const useFeedback = () => {
 
 export interface FeedbackProviderProps {
   defaultOpen?: boolean
+  modalId?: string
   children?: React.ReactNode
 }
 
 export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({
   defaultOpen = false,
+  modalId = 'default-feedback',
   children,
 }) => {
   const [open, setOpen] = useState(defaultOpen)
+  const hasDismissed = useSettingsStore((s) => s.hasDismissedFeedbackModalId(modalId))
+  const addDismissed = useSettingsStore((s) => s.addDismissedFeedbackModalId)
+
+  React.useEffect(() => {
+    if (open && hasDismissed) {
+      setOpen(false)
+    }
+  }, [hasDismissed, open])
 
   const value = useMemo(
     () => ({
       open,
-      openFeedback: () => setOpen(true),
+      openFeedback: () => {
+        if (hasDismissed) return
+        setOpen(true)
+      },
       closeFeedback: () => setOpen(false),
     }),
-    [open],
+    [hasDismissed, open],
   )
 
   return (
@@ -47,11 +61,13 @@ export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({
             name: 'feedback',
             label: 'Feedback',
             type: 'textarea',
-            placeholder: 'Tell us what you think...'
+            placeholder: 'Tell us what you think...',
+            maxLength: 512
           }
         ]}
         onClose={value.closeFeedback}
         onSubmit={() => {
+          addDismissed(modalId)
           value.closeFeedback()
         }}
       />

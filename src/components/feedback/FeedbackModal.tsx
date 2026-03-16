@@ -24,6 +24,7 @@ export interface FeedbackFieldConfig {
   options?: FeedbackFieldOption[]
   /** Whether the field is required */
   required?: boolean
+  maxLength?: number
 }
 
 export interface FeedbackModalProps {
@@ -96,6 +97,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                     label={field.label}
                     placeholder={field.placeholder}
                     value={value}
+                    maxLength={field.maxLength || 128}
                     onChange={(e) => handleChange(field.name, e.target.value)}
                     fullWidth
                   />
@@ -110,6 +112,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                       value={value}
                       onChange={(e) => handleChange(field.name, e.target.value)}
                       placeholder={field.placeholder}
+                      maxLength={field.maxLength || 128}
                       className="h-28 w-full rounded-tk-md border border-border-main bg-bg-surface px-tk-3 py-tk-2 text-tk-sm text-text-main placeholder:text-text-dim focus:outline-none focus:ring-1 focus:ring-brand-primary focus:ring-offset-1"
                     />
                   </div>

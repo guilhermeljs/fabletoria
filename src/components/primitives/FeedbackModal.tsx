@@ -20,6 +20,8 @@ export interface FeedbackFieldConfig {
   type: FeedbackFieldType
   /** Placeholder text */
   placeholder?: string
+  /** Maximum allowed length for input/textarea */
+  maxLength?: number
   /** Select options (only for type="select") */
   options?: FeedbackFieldOption[]
   /** Whether the field is required */
@@ -98,6 +100,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                     value={value}
                     onChange={(e) => handleChange(field.name, e.target.value)}
                     fullWidth
+                    maxLength={field.maxLength}
                   />
                 )
               case 'textarea':
@@ -111,6 +114,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                       onChange={(e) => handleChange(field.name, e.target.value)}
                       placeholder={field.placeholder}
                       className="h-28 w-full rounded-tk-md border border-border-main bg-bg-surface px-tk-3 py-tk-2 text-tk-sm text-text-main placeholder:text-text-dim focus:outline-none focus:ring-1 focus:ring-brand-primary focus:ring-offset-1"
+                      maxLength={field.maxLength}
                     />
                   </div>
                 )

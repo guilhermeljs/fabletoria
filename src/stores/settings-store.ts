@@ -9,6 +9,8 @@ interface SettingsState extends Omit<AppSettings, 'id'> {
   setOrganizeMaxWidth: (val: number) => void
   setOrganizeHGap: (val: number) => void
   setOrganizeVGap: (val: number) => void
+  addDismissedFeedbackModalId: (id: string) => void
+  hasDismissedFeedbackModalId: (id: string) => boolean
   resetToDefaults: () => void
   loadSettings: () => Promise<void>
 }
@@ -17,12 +19,13 @@ const DEFAULT_SETTINGS: Omit<AppSettings, 'id'> = {
   organizeRatio: 2,
   organizeMaxWidth: 500,
   organizeHGap: 100,
-  organizeVGap: 50
+  organizeVGap: 50,
+  dismissedFeedbackModalIds: []
 }
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...DEFAULT_SETTINGS,
       isLoading: true,
 
@@ -31,6 +34,14 @@ export const useSettingsStore = create<SettingsState>()(
       setOrganizeHGap: (organizeHGap) => set({ organizeHGap }),
       setOrganizeVGap: (organizeVGap) => set({ organizeVGap }),
 
+      addDismissedFeedbackModalId: (id) =>
+        set((state) => ({
+          dismissedFeedbackModalIds: [...(state.dismissedFeedbackModalIds ?? []), id]
+        })),
+
+      hasDismissedFeedbackModalId: (id) =>
+        (get().dismissedFeedbackModalIds ?? []).includes(id),
+
       resetToDefaults: () => set({ ...DEFAULT_SETTINGS }),
 
       loadSettings: async () => {
@@ -38,7 +49,7 @@ export const useSettingsStore = create<SettingsState>()(
         if (saved) {
           set({ ...saved, isLoading: false })
         } else {
-          set({ isLoading: false })
+          set({ ...DEFAULT_SETTINGS, isLoading: false })
         }
       }
     }),
@@ -57,7 +68,8 @@ export const useSettingsStore = create<SettingsState>()(
             organizeRatio: state.organizeRatio,
             organizeMaxWidth: state.organizeMaxWidth,
             organizeHGap: state.organizeHGap,
-            organizeVGap: state.organizeVGap
+            organizeVGap: state.organizeVGap,
+            dismissedFeedbackModalIds: state.dismissedFeedbackModalIds ?? []
           })
         },
         removeItem: async () => {

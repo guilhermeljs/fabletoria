@@ -114,4 +114,6 @@ export interface AppSettings {
   organizeMaxWidth: number
   organizeHGap: number
   organizeVGap: number
+  /** Feedback modals the user has already submitted */
+  dismissedFeedbackModalIds?: string[]
 }

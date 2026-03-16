@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import { BaseText } from '../primitives/BaseText'
 import { BaseButton } from '../primitives/BaseButton'
 import { useSettingsStore } from '../../stores/settings-store'
-import { OrganizeSettingsContent } from './OrganizeSettingsModal'
+import { OrganizeSettingsContent } from './OrganizeSettingsContent'
+import { AppearanceSettingsContent } from './AppearanceSettingsContent'
+import { ExportSettingsContent } from './ExportSettingsContent'
+import { BaseText } from '../primitives/BaseText'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -11,7 +13,7 @@ interface SettingsModalProps {
 
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const settings = useSettingsStore()
-  
+
   const TABS_CONFIG: { id: string; label: string; content: React.ReactNode }[] = [
     {
       id: 'tools',
@@ -21,11 +23,12 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     {
       id: 'appearance',
       label: 'Appearance',
-      content: (
-        <div className="py-tk-4">
-          <BaseText variant="dim">Appearance settings coming soon...</BaseText>
-        </div>
-      )
+      content: <AppearanceSettingsContent />
+    },
+    {
+      id: 'export',
+      label: 'Export',
+      content: <ExportSettingsContent />
     }
   ]
 
