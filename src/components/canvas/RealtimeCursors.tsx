@@ -34,13 +34,19 @@ export function CursorTracker({ narrativeId, containerRef }: CursorTrackerProps)
   // Stable refs — the native listener is created once per mode change and
   // reads these refs to always use up-to-date values without being recreated.
   const narrativeIdRef = useRef(narrativeId)
-  useEffect(() => { narrativeIdRef.current = narrativeId }, [narrativeId])
+  useEffect(() => {
+    narrativeIdRef.current = narrativeId
+  }, [narrativeId])
 
   const sendCursorRef = useRef(sendCursor)
-  useEffect(() => { sendCursorRef.current = sendCursor }, [sendCursor])
+  useEffect(() => {
+    sendCursorRef.current = sendCursor
+  }, [sendCursor])
 
   const screenToFlowPositionRef = useRef(screenToFlowPosition)
-  useEffect(() => { screenToFlowPositionRef.current = screenToFlowPosition }, [screenToFlowPosition])
+  useEffect(() => {
+    screenToFlowPositionRef.current = screenToFlowPosition
+  }, [screenToFlowPosition])
 
   // Report the active narrative immediately on navigation so the host's
   // sidebar indicator updates even before the user moves the mouse.
@@ -125,7 +131,7 @@ export const RemoteCursors = memo(function RemoteCursors({ narrativeId }: Remote
           color,
           filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.8))',
           transition: 'left 0.05s ease-in, top 0.05s ease-in',
-          transform: 'translate(-2px, -2px)',
+          transform: 'translate(-2px, -2px)'
         }}
       >
         <MousePointer2 size={20} fill={color} strokeWidth={1.5} />

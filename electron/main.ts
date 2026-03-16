@@ -2,8 +2,8 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { startMcpServer, stopMcpServer, getMcpStatus, stopOnQuit } from './mcp/server'
-import "./mcp/registry"
-import "./mcp/ipc-bridge"
+import './mcp/registry'
+import './mcp/ipc-bridge'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({

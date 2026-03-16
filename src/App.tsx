@@ -47,42 +47,46 @@ export default function App() {
       db.components.toArray(),
       db.variations.toArray(),
       db.assets.toArray()
-    ]).then(([narratives, nodes, connections, components, variations, assets]) => {
-      const narrativeMap = Object.fromEntries(narratives.map((n) => [n.id, n]))
-      const nodeMap = Object.fromEntries(nodes.map((n) => [n.id, n]))
-      const connectionMap = Object.fromEntries(connections.map((c) => [c.id, c]))
-      const componentMap = Object.fromEntries(components.map((c) => [c.id, c]))
-      const variationMap = Object.fromEntries(variations.map((v) => [v.id, v]))
-      const assetMap = Object.fromEntries(assets.map((a) => [a.id, a]))
+    ])
+      .then(([narratives, nodes, connections, components, variations, assets]) => {
+        const narrativeMap = Object.fromEntries(narratives.map((n) => [n.id, n]))
+        const nodeMap = Object.fromEntries(nodes.map((n) => [n.id, n]))
+        const connectionMap = Object.fromEntries(connections.map((c) => [c.id, c]))
+        const componentMap = Object.fromEntries(components.map((c) => [c.id, c]))
+        const variationMap = Object.fromEntries(variations.map((v) => [v.id, v]))
+        const assetMap = Object.fromEntries(assets.map((a) => [a.id, a]))
 
-      useProjectStore.setState({
-        narratives: narrativeMap,
-        nodes: nodeMap,
-        connections: connectionMap,
-        components: componentMap,
-        variations: variationMap
+        useProjectStore.setState({
+          narratives: narrativeMap,
+          nodes: nodeMap,
+          connections: connectionMap,
+          components: componentMap,
+          variations: variationMap
+        })
+        useProjectStore.temporal.getState().clear()
+        useAssetStore.setState({ assets: assetMap })
+
+        // Ensure at least one narrative exists
+        const store = useProjectStore.getState()
+        const allNarratives = Object.values(narrativeMap)
+
+        let activeId = localStorage.getItem(ACTIVE_NARRATIVE_STORAGE_KEY)
+
+        if (allNarratives.length === 0) {
+          const defaultNarrative = store.ensureDefaultNarrative()
+          activeId = defaultNarrative.id
+        } else if (!activeId || !narrativeMap[activeId]) {
+          const sorted = [...allNarratives].sort(
+            (a, b) => (b?.updatedAt ?? 0) - (a?.updatedAt ?? 0)
+          )
+          activeId = sorted[0]?.id ?? null
+        }
+
+        if (activeId) {
+          setActiveNarrative(activeId)
+        }
       })
-      useProjectStore.temporal.getState().clear()
-      useAssetStore.setState({ assets: assetMap })
-
-      // Ensure at least one narrative exists
-      const store = useProjectStore.getState()
-      const allNarratives = Object.values(narrativeMap)
-
-      let activeId = localStorage.getItem(ACTIVE_NARRATIVE_STORAGE_KEY)
-
-      if (allNarratives.length === 0) {
-        const defaultNarrative = store.ensureDefaultNarrative()
-        activeId = defaultNarrative.id
-      } else if (!activeId || !narrativeMap[activeId]) {
-        const sorted = [...allNarratives].sort((a, b) => (b?.updatedAt ?? 0) - (a?.updatedAt ?? 0))
-        activeId = sorted[0]?.id ?? null
-      }
-
-      if (activeId) {
-        setActiveNarrative(activeId)
-      }
-    }).catch(console.error)
+      .catch(console.error)
   }, [setActiveNarrative])
 
   // Storage warning listener
@@ -97,9 +101,7 @@ export default function App() {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement
       const isEditing =
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.isContentEditable
+        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
       if (isEditing) return
 
       const isMac = navigator.platform.toUpperCase().includes('MAC')
@@ -121,7 +123,7 @@ export default function App() {
     <PortalProvider>
       <MobileUnsupportedOverlay />
       <div className="flex flex-col h-screen bg-bg-main text-text-main overflow-hidden">
-        <FeedbackProvider/>
+        <FeedbackProvider />
         <Toolbar />
 
         {storageWarning && (

@@ -44,7 +44,9 @@ vi.mock('../src/lib/db', () => ({
       get: vi.fn().mockResolvedValue(undefined),
       bulkDelete: vi.fn().mockResolvedValue(undefined)
     },
-    transaction: vi.fn().mockImplementation((_mode: string, _tables: unknown[], fn: () => Promise<void>) => fn())
+    transaction: vi
+      .fn()
+      .mockImplementation((_mode: string, _tables: unknown[], fn: () => Promise<void>) => fn())
   },
   checkStorageQuota: vi.fn().mockResolvedValue(undefined)
 }))
@@ -54,9 +56,15 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {}
   return {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = value },
-    removeItem: (key: string) => { delete store[key] },
-    clear: () => { store = {} }
+    setItem: (key: string, value: string) => {
+      store[key] = value
+    },
+    removeItem: (key: string) => {
+      delete store[key]
+    },
+    clear: () => {
+      store = {}
+    }
   }
 })()
 Object.defineProperty(window, 'localStorage', { value: localStorageMock })

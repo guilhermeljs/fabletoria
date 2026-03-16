@@ -3,7 +3,7 @@ import { resolveContent } from '../../../src/lib/interpolation'
 import type { VariationMap } from '../../../src/lib/types'
 
 const variations: VariationMap = {
-  'v1': {
+  v1: {
     id: 'v1',
     componentId: 'c1',
     name: 'hero',
@@ -17,9 +17,7 @@ describe('resolveContent', () => {
   it('resolves a simple paragraph with no variables', () => {
     const doc = {
       type: 'doc',
-      content: [
-        { type: 'paragraph', content: [{ type: 'text', text: 'Hello world' }] }
-      ]
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello world' }] }]
     }
     const { html, hasUnresolved } = resolveContent(doc, variations)
     expect(html).toContain('Hello world')
@@ -33,7 +31,10 @@ describe('resolveContent', () => {
         {
           type: 'paragraph',
           content: [
-            { type: 'variableNode', attrs: { variationName: 'hero', fieldName: 'name', raw: '{{hero.name}}' } }
+            {
+              type: 'variableNode',
+              attrs: { variationName: 'hero', fieldName: 'name', raw: '{{hero.name}}' }
+            }
           ]
         }
       ]
@@ -50,7 +51,10 @@ describe('resolveContent', () => {
         {
           type: 'paragraph',
           content: [
-            { type: 'variableNode', attrs: { variationName: 'villain', fieldName: 'name', raw: '{{villain.name}}' } }
+            {
+              type: 'variableNode',
+              attrs: { variationName: 'villain', fieldName: 'name', raw: '{{villain.name}}' }
+            }
           ]
         }
       ]
@@ -74,7 +78,10 @@ describe('resolveContent', () => {
         {
           type: 'paragraph',
           content: [
-            { type: 'variableNode', attrs: { variationName: 'hero', fieldName: 'level', raw: '{{hero.level}}' } }
+            {
+              type: 'variableNode',
+              attrs: { variationName: 'hero', fieldName: 'level', raw: '{{hero.level}}' }
+            }
           ]
         }
       ]

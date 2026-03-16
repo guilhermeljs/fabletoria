@@ -1,5 +1,13 @@
 import Dexie, { type Table } from 'dexie'
-import type { Narrative, StoryNode, Connection, Component, Variation, Asset, AppSettings } from './types'
+import type {
+  Narrative,
+  StoryNode,
+  Connection,
+  Component,
+  Variation,
+  Asset,
+  AppSettings
+} from './types'
 
 export class FabletoriaDB extends Dexie {
   narratives!: Table<Narrative>
@@ -56,7 +64,9 @@ export async function checkStorageQuota(): Promise<void> {
   try {
     const { usage = 0, quota = 1 } = await navigator.storage.estimate()
     if (usage / quota > STORAGE_WARNING_THRESHOLD) {
-      window.dispatchEvent(new CustomEvent('fabletoria:storage-warning', { detail: { usage, quota } }))
+      window.dispatchEvent(
+        new CustomEvent('fabletoria:storage-warning', { detail: { usage, quota } })
+      )
     }
   } catch {
     // Non-critical: storage estimate not available in all environments

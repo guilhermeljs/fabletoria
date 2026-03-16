@@ -9,7 +9,9 @@ export interface ToolDefinition {
   name: string
   description: string
   schema: ZodRawShape
-  handler: (params: Record<string, unknown>) => Promise<{ content: Array<{ type: 'text'; text: string }> }>
+  handler: (
+    params: Record<string, unknown>
+  ) => Promise<{ content: Array<{ type: 'text'; text: string }> }>
 }
 
 const registry: ToolDefinition[] = []
@@ -19,7 +21,6 @@ export function registerTool(definition: ToolDefinition): void {
 }
 
 export function registerAllTools(server: McpServer): void {
-
   for (const tool of registry) {
     server.tool(tool.name, tool.description, tool.schema, tool.handler)
   }

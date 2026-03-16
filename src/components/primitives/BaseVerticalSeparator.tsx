@@ -1,18 +1,18 @@
-import React from 'react';
+import React from 'react'
 
 interface VerticalSeparatorProps {
-  height?: string;
-  className?: string;
-  color?: string;
+  height?: string
+  className?: string
+  color?: string
 }
 
 export const BaseVerticalSeparator: React.FC<VerticalSeparatorProps> = ({
   height = 'h-6',
   className = '',
-  color = 'bg-border-main',
+  color = 'bg-border-main'
 }) => {
   return (
-    <div 
+    <div
       className={`
         w-[1px] 
         ${height} 
@@ -22,5 +22,5 @@ export const BaseVerticalSeparator: React.FC<VerticalSeparatorProps> = ({
       `}
       aria-hidden="true"
     />
-  );
-};
+  )
+}

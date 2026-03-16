@@ -1,12 +1,12 @@
-import React from 'react';
+import React from 'react'
 
 interface BaseBackdropProps {
-  onClick?: () => void;
-  isOpen: boolean;
-  blur?: boolean;
-  dim?: boolean;
-  children?: React.ReactNode;
-  zIndex?: number;
+  onClick?: () => void
+  isOpen: boolean
+  blur?: boolean
+  dim?: boolean
+  children?: React.ReactNode
+  zIndex?: number
 }
 
 export const BaseBackdrop: React.FC<BaseBackdropProps> = ({
@@ -15,9 +15,9 @@ export const BaseBackdrop: React.FC<BaseBackdropProps> = ({
   blur = true,
   dim = true,
   children,
-  zIndex = 10,
+  zIndex = 10
 }) => {
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const backdropClasses = `
     fixed inset-0 
@@ -25,15 +25,11 @@ export const BaseBackdrop: React.FC<BaseBackdropProps> = ({
     ${dim ? 'bg-black/50' : 'bg-transparent'}
     ${blur ? 'backdrop-blur-sm' : ''}
     pointer-events-auto
-  `.trim();
+  `.trim()
 
   return (
-    <div 
-      className={backdropClasses} 
-      style={{ zIndex }}
-      onClick={onClick}
-    >
+    <div className={backdropClasses} style={{ zIndex }} onClick={onClick}>
       {children}
     </div>
-  );
-};
+  )
+}

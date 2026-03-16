@@ -2,30 +2,47 @@ import { z } from 'zod'
 import { registerTool } from '../registry'
 import { ipcBridge } from '../ipc-bridge'
 
-const tiptapContent = z.record(z.string(), z.unknown()).optional().nullable()
-  .describe('Rich text content as Tiptap JSON (editor.getJSON() format). Supports {{variationName.fieldName}} interpolation. Pass null or omit for empty node.')
+const tiptapContent = z
+  .record(z.string(), z.unknown())
+  .optional()
+  .nullable()
+  .describe(
+    'Rich text content as Tiptap JSON (editor.getJSON() format). Supports {{variationName.fieldName}} interpolation. Pass null or omit for empty node.'
+  )
 
 registerTool({
   name: 'node.create',
   description: 'Adds a new generic story node to a narrative. Returns the node ID.',
   schema: {
     narrativeId: z.string().describe('ID of the narrative to add the node to.'),
-    title: z.string().describe('The title for the node. In Play Mode, when a player reaches a node with choices, each outgoing edge is shown as a button labelled with the target node\'s title.'),
+    title: z
+      .string()
+      .describe(
+        "The title for the node. In Play Mode, when a player reaches a node with choices, each outgoing edge is shown as a button labelled with the target node's title."
+      ),
     content: tiptapContent
   },
   handler: async ({ narrativeId, title, content }) => {
-    const result = await ipcBridge.invoke('node:create', { narrativeId, title: title ?? null, content: content ?? null })
+    const result = await ipcBridge.invoke('node:create', {
+      narrativeId,
+      title: title ?? null,
+      content: content ?? null
+    })
     return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] }
   }
 })
 
 registerTool({
   name: 'node.content.edit',
-  description: "Replaces the Tiptap JSON content of a story node. Accepts Tiptap JSON (editor.getJSON() format). Any Tiptap extension (images, embeds, etc.) is automatically supported. Supports {{variationName.fieldName}} interpolation syntax.",
+  description:
+    'Replaces the Tiptap JSON content of a story node. Accepts Tiptap JSON (editor.getJSON() format). Any Tiptap extension (images, embeds, etc.) is automatically supported. Supports {{variationName.fieldName}} interpolation syntax.',
   schema: {
     nodeId: z.string().describe('ID of the node to update.'),
-    content: z.record(z.string(), z.unknown())
-      .describe('New content as Tiptap JSON (editor.getJSON() format). Supports {{variationName.fieldName}} interpolation. Unresolved references are accepted.')
+    content: z
+      .record(z.string(), z.unknown())
+      .describe(
+        'New content as Tiptap JSON (editor.getJSON() format). Supports {{variationName.fieldName}} interpolation. Unresolved references are accepted.'
+      )
   },
   handler: async ({ nodeId, content }) => {
     const result = await ipcBridge.invoke('node:editContent', { nodeId, content })
@@ -33,28 +50,45 @@ registerTool({
   }
 })
 
-
 registerTool({
   name: 'node.create-from-variation',
-  description: 'Creates a variation-backed story node in a narrative (equivalent to dragging a variation onto the canvas). Returns the node ID.',
+  description:
+    'Creates a variation-backed story node in a narrative (equivalent to dragging a variation onto the canvas). Returns the node ID.',
   schema: {
     narrativeId: z.string().describe('ID of the narrative to add the node to.'),
     variationId: z.string().describe('ID of the variation to back this node.'),
-    title: z.string().optional().nullable().describe('Optional title for the node. In Play Mode, when a player reaches a node with choices, each outgoing edge is shown as a button labelled with the target node\'s title. If omitted, falls back to the variation\'s default title.'),
+    title: z
+      .string()
+      .optional()
+      .nullable()
+      .describe(
+        "Optional title for the node. In Play Mode, when a player reaches a node with choices, each outgoing edge is shown as a button labelled with the target node's title. If omitted, falls back to the variation's default title."
+      ),
     content: tiptapContent
   },
   handler: async ({ narrativeId, variationId, title, content }) => {
-    const result = await ipcBridge.invoke('node:createFromVariation', { narrativeId, variationId, title: title ?? null, content: content ?? null })
+    const result = await ipcBridge.invoke('node:createFromVariation', {
+      narrativeId,
+      variationId,
+      title: title ?? null,
+      content: content ?? null
+    })
     return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] }
   }
 })
 
 registerTool({
   name: 'node.update',
-  description: "Updates a node's metadata, including assigning or replacing its associated variation reference.",
+  description:
+    "Updates a node's metadata, including assigning or replacing its associated variation reference.",
   schema: {
     nodeId: z.string().describe('ID of the node to update.'),
-    variationId: z.string().nullable().describe('ID of the variation to associate with this node. Pass null to remove the current association.')
+    variationId: z
+      .string()
+      .nullable()
+      .describe(
+        'ID of the variation to associate with this node. Pass null to remove the current association.'
+      )
   },
   handler: async ({ nodeId, variationId }) => {
     const result = await ipcBridge.invoke('node:update', { nodeId, variationId })
@@ -64,7 +98,7 @@ registerTool({
 
 registerTool({
   name: 'node.set-start',
-  description: "Designates a node as the starting node of its narrative.",
+  description: 'Designates a node as the starting node of its narrative.',
   schema: {
     nodeId: z.string().describe('ID of the node to designate as the start node.')
   },
@@ -76,7 +110,8 @@ registerTool({
 
 registerTool({
   name: 'node.delete',
-  description: 'Removes a story node from its narrative. All edges connected to the deleted node are also removed.',
+  description:
+    'Removes a story node from its narrative. All edges connected to the deleted node are also removed.',
   schema: {
     nodeId: z.string().describe('ID of the node to delete.')
   },
@@ -88,7 +123,8 @@ registerTool({
 
 registerTool({
   name: 'node.title.edit',
-  description: "Updates the title of a given story node. Useful when only the title needs changing.",
+  description:
+    'Updates the title of a given story node. Useful when only the title needs changing.',
   schema: {
     nodeId: z.string().describe('ID of the node to modify.'),
     title: z.string().describe('New title text for the node.')

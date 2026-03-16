@@ -1,8 +1,8 @@
-import React, { ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import React, { ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 interface PortalProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export const PortalProvider: React.FC<PortalProviderProps> = ({ children }) => {
@@ -14,29 +14,29 @@ export const PortalProvider: React.FC<PortalProviderProps> = ({ children }) => {
       <div id="tooltip-root" className="fixed inset-0 pointer-events-none z-[3000]" />
       <div id="context-menu-root" className="fixed inset-0 pointer-events-none z-[4500]" />
     </>
-  );
-};
+  )
+}
 
 export const ModalPortal: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const el = document.getElementById('modal-root');
-  if (!el) return null;
-  return createPortal(children, el);
-};
+  const el = document.getElementById('modal-root')
+  if (!el) return null
+  return createPortal(children, el)
+}
 
 export const ToastPortal: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const el = document.getElementById('toast-root');
-  if (!el) return null;
-  return createPortal(children, el);
-};
+  const el = document.getElementById('toast-root')
+  if (!el) return null
+  return createPortal(children, el)
+}
 
 export const TooltipPortal: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const el = document.getElementById('tooltip-root');
-  if (!el) return null;
-  return createPortal(children, el);
-};
+  const el = document.getElementById('tooltip-root')
+  if (!el) return null
+  return createPortal(children, el)
+}
 
 export const ContextMenuPortal: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const el = document.getElementById('context-menu-root');
-  if (!el) return null;
-  return createPortal(children, el);
-};
+  const el = document.getElementById('context-menu-root')
+  if (!el) return null
+  return createPortal(children, el)
+}

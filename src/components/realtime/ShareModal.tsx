@@ -145,7 +145,7 @@ export default function ShareModal({ onClose }: ShareModalProps) {
         {/* ── Accept answer input ─────────────────────────────────────────── */}
         <div className="flex flex-col gap-tk-2">
           <BaseText size="sm" weight="semibold">
-            Paste a guest's code
+            Paste a guest&apos;s code
           </BaseText>
           <BaseText size="xs" variant="dim">
             When a guest opens the link and generates the confirmation code, paste it here to accept
@@ -210,7 +210,7 @@ export default function ShareModal({ onClose }: ShareModalProps) {
 
           {invites.length === 0 ? (
             <div className="flex items-center justify-center py-tk-6 text-text-dim text-tk-sm">
-              You haven't invited anyone yet.
+              You haven&apos;t invited anyone yet.
             </div>
           ) : (
             <div className="flex flex-col gap-tk-2 max-h-52 overflow-y-auto">

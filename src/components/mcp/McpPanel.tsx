@@ -11,7 +11,12 @@ interface Props {
 }
 
 function statusLabel(status: McpServerStatus): string {
-  return { stopped: 'Not running', starting: 'Starting…', running: 'Running', stopping: 'Stopping…' }[status]
+  return {
+    stopped: 'Not running',
+    starting: 'Starting…',
+    running: 'Running',
+    stopping: 'Stopping…'
+  }[status]
 }
 
 function statusBadge(status: McpServerStatus) {
@@ -30,12 +35,7 @@ function statusBadge(status: McpServerStatus) {
   } as const
 
   return (
-    <BaseBadge
-      variant={variants[status]}
-      size="xs"
-      rounded
-      className={extraClasses[status]}
-    >
+    <BaseBadge variant={variants[status]} size="xs" rounded className={extraClasses[status]}>
       {statusLabel(status)}
     </BaseBadge>
   )
@@ -84,9 +84,7 @@ export default function McpPanel({ onClose }: Props) {
           </BaseText>
 
           <div className="flex items-center gap-tk-2 bg-bg-header rounded-tk-lg px-tk-3 py-tk-2">
-            <code className="flex-1 truncate font-content text-tk-xs text-text-dim">
-              {url}
-            </code>
+            <code className="flex-1 truncate font-content text-tk-xs text-text-dim">{url}</code>
             <BaseButton size="sm" variant="ghost" onClick={copyUrl} className="shrink-0">
               Copy
             </BaseButton>
@@ -103,7 +101,11 @@ export default function McpPanel({ onClose }: Props) {
             <BaseButton
               size="sm"
               variant="ghost"
-              onClick={() => copyText('claude mcp add fabletoria --transport sse --scope user http://localhost:7700/sse')}
+              onClick={() =>
+                copyText(
+                  'claude mcp add fabletoria --transport sse --scope user http://localhost:7700/sse'
+                )
+              }
               className="shrink-0"
             >
               Copy
@@ -121,7 +123,9 @@ export default function McpPanel({ onClose }: Props) {
             <BaseButton
               size="sm"
               variant="ghost"
-              onClick={() => copyText('gemini mcp add --transport sse fabletoria http://localhost:7700/sse')}
+              onClick={() =>
+                copyText('gemini mcp add --transport sse fabletoria http://localhost:7700/sse')
+              }
               className="shrink-0"
             >
               Copy
@@ -142,23 +146,11 @@ export default function McpPanel({ onClose }: Props) {
       {/* Start / Stop */}
       <div className="flex gap-tk-2">
         {!isRunning ? (
-          <BaseButton
-            variant="primary"
-            size="md"
-            fullWidth
-            isLoading={isBusy}
-            onClick={start}
-          >
+          <BaseButton variant="primary" size="md" fullWidth isLoading={isBusy} onClick={start}>
             {status === 'starting' ? 'Starting…' : 'Start MCP'}
           </BaseButton>
         ) : (
-          <BaseButton
-            variant="secondary"
-            size="md"
-            fullWidth
-            isLoading={isBusy}
-            onClick={stop}
-          >
+          <BaseButton variant="secondary" size="md" fullWidth isLoading={isBusy} onClick={stop}>
             {isBusy ? 'Stopping…' : 'Stop MCP'}
           </BaseButton>
         )}

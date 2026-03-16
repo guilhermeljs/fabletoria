@@ -43,7 +43,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
   onClose,
   title = 'Feedback',
   description,
-  errors = [],
+  errors = []
 }) => {
   const initialValues = useMemo(() => {
     const vals: Record<string, string | number> = {}
@@ -74,7 +74,9 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
 
     const errorEl = error ? (
       <div className="mt-tk-1 flex items-center gap-1 rounded-tk-sm bg-status-error/10 px-tk-2 py-tk-1 border border-status-error/30">
-        <span className="text-status-error" style={{ fontSize: '10px' }}>●</span>
+        <span className="text-status-error" style={{ fontSize: '10px' }}>
+          ●
+        </span>
         <BaseText size="sm" className="text-status-error">
           {error}
         </BaseText>
@@ -157,9 +159,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
 
         <div className="mt-tk-4 space-y-tk-3">
           {fields.map((field) => (
-            <React.Fragment key={field.name}>
-              {renderField(field)}
-            </React.Fragment>
+            <React.Fragment key={field.name}>{renderField(field)}</React.Fragment>
           ))}
         </div>
 

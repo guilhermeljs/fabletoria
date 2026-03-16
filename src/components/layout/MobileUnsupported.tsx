@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Smartphone } from 'lucide-react'
 import { BaseButton } from '../primitives/BaseButton'
 import { isElectron } from '../../lib/platform'
@@ -36,9 +36,9 @@ export function MobileUnsupportedOverlay() {
             Mobile not supported
           </BaseText>
 
-          <BaseText as="p" variant="dim" className='text-center'>
-            Fabletoria still doesn't support mobile devices. You can proceed at your own risk. There
-            will be bugs.
+          <BaseText as="p" variant="dim" className="text-center">
+            Fabletoria still doesn&apos;t support mobile devices. You can proceed at your own risk.
+            There will be bugs.
           </BaseText>
           <p className="mt-tk-2 text-sm opacity-80 text-center"></p>
           <BaseButton variant="ghost" size="lg" onClick={() => setDismissed(true)}>

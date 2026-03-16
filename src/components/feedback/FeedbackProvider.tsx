@@ -31,8 +31,10 @@ function isValidTemplate(t: unknown): t is FeedbackTemplate {
       return field.options.every((o: unknown) => {
         if (!o || typeof o !== 'object') return false
         const opt = o as Record<string, unknown>
-        return (typeof opt.value === 'string' || typeof opt.value === 'number') &&
-               typeof opt.label === 'string'
+        return (
+          (typeof opt.value === 'string' || typeof opt.value === 'number') &&
+          typeof opt.label === 'string'
+        )
       })
     }
     return true
@@ -47,6 +49,7 @@ interface FeedbackContextValue {
 
 const FeedbackContext = createContext<FeedbackContextValue | null>(null)
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useFeedback = () => {
   const ctx = useContext(FeedbackContext)
   if (!ctx) throw new Error('useFeedback must be used within a FeedbackProvider')
@@ -72,7 +75,7 @@ export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({ children }) 
 
     const fetchFeedbacks = () =>
       fetch(`${GENERAL_API}/feedbacks`, {
-        headers: { 'x-fingerprint': getFingerprint() },
+        headers: { 'x-fingerprint': getFingerprint() }
       })
         .then((res) => res.json())
         .then((data: unknown) => {
@@ -80,16 +83,18 @@ export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({ children }) 
           const valid = data.filter(isValidTemplate)
           if (valid.length > 0) setTemplates(valid)
         })
-        .catch(() => {/* silently ignore fetch failures */})
+        .catch(() => {
+          /* silently ignore fetch failures */
+        })
 
     fetchFeedbacks()
     const interval = setInterval(fetchFeedbacks, 1 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [isLoading])
+  }, [isLoading, getFingerprint])
 
   const pending = useMemo(
     () => templates?.filter((t) => !dismissedIds.includes(t.id)),
-    [templates, dismissedIds],
+    [templates, dismissedIds]
   )
 
   const current = manuallyClosed ? null : (pending[0] ?? null)
@@ -104,7 +109,7 @@ export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({ children }) 
     const res = await fetch(`${GENERAL_API}/feedback/answer/${current.id}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-fingerprint': getFingerprint() },
-      body: JSON.stringify(values),
+      body: JSON.stringify(values)
     })
 
     if (res.status === 400) {
@@ -127,11 +132,13 @@ export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({ children }) 
 
   // Reset manuallyClosed when new pending items arrive (e.g. after templates load)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (pending.length > 0) setManuallyClosed(false)
   }, [pending.length])
 
   // Reset errors when current changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSubmitErrors([])
   }, [current?.id])
 
@@ -142,9 +149,9 @@ export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({ children }) 
         if (pending.length === 0) return
         setManuallyClosed(false)
       },
-      closeFeedback,
+      closeFeedback
     }),
-    [open, pending.length],
+    [open, pending.length]
   )
 
   return (
@@ -155,7 +162,7 @@ export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({ children }) 
           open={open}
           title={current.title}
           fields={current.fields}
-          description={current.description || ""}
+          description={current.description || ''}
           errors={submitErrors}
           onClose={closeFeedback}
           onSubmit={handleSubmit}

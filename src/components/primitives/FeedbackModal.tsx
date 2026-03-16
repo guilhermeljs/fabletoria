@@ -49,7 +49,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
   onSubmit,
   onClose,
   title = 'Feedback',
-  description,
+  description
 }) => {
   const initialValues = useMemo(() => {
     const vals: Record<string, string> = {}

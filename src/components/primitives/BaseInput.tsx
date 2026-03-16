@@ -1,15 +1,15 @@
-import React from 'react';
+import React from 'react'
 
-type InputSize = 'sm' | 'md' | 'lg';
+type InputSize = 'sm' | 'md' | 'lg'
 
 interface BaseInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
-  size?: InputSize;
-  error?: string | undefined;
-  label?: string;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  fullWidth?: boolean;
-  ref?: React.Ref<HTMLInputElement>;
+  size?: InputSize
+  error?: string | undefined
+  label?: string
+  leftIcon?: React.ReactNode
+  rightIcon?: React.ReactNode
+  fullWidth?: boolean
+  ref?: React.Ref<HTMLInputElement>
 }
 
 export const BaseInput: React.FC<BaseInputProps> = ({
@@ -33,15 +33,15 @@ export const BaseInput: React.FC<BaseInputProps> = ({
     transition-shadow duration-200 ease-in-out
     ${leftIcon ? 'pl-tk-8' : ''}
     ${rightIcon ? 'pr-tk-8' : ''}
-  `;
+  `
 
   const sizeClasses = {
     sm: 'h-8 px-tk-2 text-tk-xs',
     md: 'h-10 px-tk-3 text-tk-sm',
-    lg: 'h-12 px-tk-4 text-tk-base',
-  };
+    lg: 'h-12 px-tk-4 text-tk-base'
+  }
 
-  const errorClasses = error ? 'border-status-error focus-visible:ring-status-error' : '';
+  const errorClasses = error ? 'border-status-error focus-visible:ring-status-error' : ''
 
   const finalClassName = `
     ${baseClasses}
@@ -50,14 +50,12 @@ export const BaseInput: React.FC<BaseInputProps> = ({
     ${leftIcon ? 'pl-tk-10' : ''}
     ${rightIcon ? 'pr-tk-10' : ''}
     ${className}
-  `.trim();
+  `.trim()
 
   return (
     <div className={`${fullWidth ? 'w-full' : 'w-auto'}`}>
       {label && (
-        <label className="text-tk-sm font-medium text-text-main mb-tk-1 block">
-          {label}
-        </label>
+        <label className="text-tk-sm font-medium text-text-main mb-tk-1 block">{label}</label>
       )}
       <div className="relative">
         {leftIcon && (
@@ -65,20 +63,14 @@ export const BaseInput: React.FC<BaseInputProps> = ({
             {leftIcon}
           </div>
         )}
-        <input
-          className={finalClassName}
-          disabled={disabled}
-          {...props}
-        />
+        <input className={finalClassName} disabled={disabled} {...props} />
         {rightIcon && (
           <div className="absolute right-tk-3 top-1/2 -translate-y-1/2 text-text-dim">
             {rightIcon}
           </div>
         )}
       </div>
-      {error && (
-        <p className="text-tk-xs text-status-error mt-tk-1">{error}</p>
-      )}
+      {error && <p className="text-tk-xs text-status-error mt-tk-1">{error}</p>}
     </div>
-  );
-};
+  )
+}

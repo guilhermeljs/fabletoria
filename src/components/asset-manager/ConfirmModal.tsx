@@ -10,7 +10,14 @@ interface Props {
   danger?: boolean
 }
 
-export default function ConfirmModal({ title, body, confirmLabel, onConfirm, onCancel, danger }: Props) {
+export default function ConfirmModal({
+  title,
+  body,
+  confirmLabel,
+  onConfirm,
+  onCancel,
+  danger
+}: Props) {
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50">
       <div className="bg-bg-surface border border-border-main rounded-tk-xl shadow-2xl p-tk-6 max-w-sm w-full mx-4">
@@ -24,11 +31,7 @@ export default function ConfirmModal({ title, body, confirmLabel, onConfirm, onC
           <BaseButton variant="ghost" size="sm" onClick={onCancel}>
             Cancel
           </BaseButton>
-          <BaseButton
-            variant={danger ? 'danger' : 'primary'}
-            size="sm"
-            onClick={onConfirm}
-          >
+          <BaseButton variant={danger ? 'danger' : 'primary'} size="sm" onClick={onConfirm}>
             {confirmLabel}
           </BaseButton>
         </div>

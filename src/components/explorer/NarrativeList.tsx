@@ -2,13 +2,13 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import { useProjectStore } from '../../stores/project-store'
 import { useUIStore } from '../../stores/ui-store'
 import { useRealtimeStore } from '../../stores/realtime-store'
-import type { EntityId, Narrative } from '../../lib/types';
-import { NarrativeListItem } from './NarrativeListItem';
-import { useModalStore } from '../../stores/modal-store';
-import { useContextMenuStore } from '../../stores/context-menu-store';
-import { BaseText } from '../primitives/BaseText';
-import { BaseButton } from '../primitives/BaseButton';
-import { BaseIcon } from '../primitives/BaseIcon';
+import type { EntityId, Narrative } from '../../lib/types'
+import { NarrativeListItem } from './NarrativeListItem'
+import { useModalStore } from '../../stores/modal-store'
+import { useContextMenuStore } from '../../stores/context-menu-store'
+import { BaseText } from '../primitives/BaseText'
+import { BaseButton } from '../primitives/BaseButton'
+import { BaseIcon } from '../primitives/BaseIcon'
 
 export default function NarrativeList() {
   const narratives = useProjectStore((s) => s.narratives)
@@ -66,7 +66,8 @@ export default function NarrativeList() {
   function handleDelete(id: EntityId) {
     modalStore.openModal('Confirm', {
       title: 'Delete Narrative',
-      message: 'Are you sure you want to delete this narrative and all its nodes and connections? This action cannot be undone.',
+      message:
+        'Are you sure you want to delete this narrative and all its nodes and connections? This action cannot be undone.',
       confirmLabel: 'Delete Narrative',
       onConfirm: () => {
         deleteNarrative(id)
@@ -119,15 +120,15 @@ export default function NarrativeList() {
                   onClick: () => {
                     const n = narratives[narrative.id]
                     if (n) startEdit(n)
-                  },
+                  }
                 },
                 { type: 'separator' },
                 {
                   label: 'Delete',
                   icon: 'Trash2',
                   variant: 'danger',
-                  onClick: () => handleDelete(narrative.id),
-                },
+                  onClick: () => handleDelete(narrative.id)
+                }
               ])
             }}
             inputRef={inputRef as React.RefObject<HTMLInputElement>}

@@ -19,22 +19,29 @@ export default function PlayMode() {
 
   const currentNode = currentNodeId ? nodes[currentNodeId] : null
 
-  const currentVariation = currentNode?.variationId ? variations[currentNode.variationId] : undefined
+  const currentVariation = currentNode?.variationId
+    ? variations[currentNode.variationId]
+    : undefined
 
   let html = ''
   if (currentNode) {
     try {
       const parsed = JSON.parse(currentNode.content) as object
-      const { html: resolved } = resolveContent(parsed, variations, currentVariation?.values, assets)
+      const { html: resolved } = resolveContent(
+        parsed,
+        variations,
+        currentVariation?.values,
+        assets
+      )
       html = resolved
     } catch {
       html = '<p>Unable to render content.</p>'
     }
   }
 
-  const outgoingConnections = Object.values(connections).filter(
-    (c) => c?.sourceNodeId === currentNodeId
-  ).filter(Boolean) as NonNullable<typeof connections[string]>[]
+  const outgoingConnections = Object.values(connections)
+    .filter((c) => c?.sourceNodeId === currentNodeId)
+    .filter(Boolean) as NonNullable<(typeof connections)[string]>[]
 
   const isEndState = outgoingConnections.length === 0
 
@@ -88,8 +95,13 @@ export default function PlayMode() {
                 >
                   {(() => {
                     const targetNode = nodes[connection.targetNodeId]
-                    const targetVariation = targetNode?.variationId ? variations[targetNode.variationId] : undefined
-                    return resolveTitle(targetNode?.title ?? '', targetVariation?.values) || `Choice ${index + 1}`
+                    const targetVariation = targetNode?.variationId
+                      ? variations[targetNode.variationId]
+                      : undefined
+                    return (
+                      resolveTitle(targetNode?.title ?? '', targetVariation?.values) ||
+                      `Choice ${index + 1}`
+                    )
                   })()}
                 </button>
               ))}

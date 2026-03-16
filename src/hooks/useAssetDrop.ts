@@ -1,8 +1,14 @@
 import { useRef, useState } from 'react'
 
 const ACCEPTED_TYPES = new Set([
-  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
-  'application/pdf', 'text/plain', 'text/markdown'
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
+  'application/pdf',
+  'text/plain',
+  'text/markdown'
 ])
 
 export function useAssetDrop(onDrop: (files: File[]) => void) {
@@ -31,9 +37,7 @@ export function useAssetDrop(onDrop: (files: File[]) => void) {
     dragDepth.current = 0
     setIsDragging(false)
 
-    const files = Array.from(e.dataTransfer.files).filter(
-      (f) => ACCEPTED_TYPES.has(f.type)
-    )
+    const files = Array.from(e.dataTransfer.files).filter((f) => ACCEPTED_TYPES.has(f.type))
     if (files.length > 0) onDrop(files)
   }
 

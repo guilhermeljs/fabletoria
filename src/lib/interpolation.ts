@@ -50,7 +50,7 @@ function walkAndResolve(
   // Handle asset file nodes
   if (node.type === 'assetFile' && assets) {
     const assetId = node.attrs?.['assetId'] as string | undefined
-    const label = node.attrs?.['label'] as string | undefined ?? ''
+    const label = (node.attrs?.['label'] as string | undefined) ?? ''
     const payload = JSON.stringify({ assetId, label })
     return {
       node: { type: 'text', text: `${ASSET_FILE_SENTINEL}${payload}${ASSET_SENTINEL_END}` },
@@ -154,18 +154,28 @@ export function resolveContent(
     html = html.replace(assetImgRegex, (_match, payload: string) => {
       try {
         const { assetId, width, mt, mr, mb, ml } = JSON.parse(payload) as {
-          assetId: string; width: number | string; mt: number; mr: number; mb: number; ml: number
+          assetId: string
+          width: number | string
+          mt: number
+          mr: number
+          mb: number
+          ml: number
         }
         const asset = assets[assetId]
         if (!asset) {
           return '<div style="background:#3f3f46;border:1px solid #71717a;padding:16px;border-radius:4px;color:#a1a1aa;font-size:12px">⚠ Asset deleted</div>'
         }
-        const src = asset.sourceType === 'url'
-          ? (asset.url ?? '')
-          : (asset.data ? URL.createObjectURL(asset.data) : '')
+        const src =
+          asset.sourceType === 'url'
+            ? (asset.url ?? '')
+            : asset.data
+              ? URL.createObjectURL(asset.data)
+              : ''
         const style = `display:block;width:${typeof width === 'number' ? `${width}px` : width};height:auto;margin:${mt}px ${mr}px ${mb}px ${ml}px;`
         return `<img src="${escapeHtml(src)}" alt="${escapeHtml(asset.name)}" style="${style}" />`
-      } catch { return '' }
+      } catch {
+        return ''
+      }
     })
 
     // Replace asset file sentinels with <a> links
@@ -180,12 +190,20 @@ export function resolveContent(
         if (!asset) {
           return `<span style="text-decoration:line-through;color:#71717a" title="Asset deleted">📎 ${escapeHtml(label)}</span>`
         }
-        const href = asset.sourceType === 'url'
-          ? (asset.url ?? '#')
-          : (asset.data ? URL.createObjectURL(asset.data) : '#')
-        const download = asset.sourceType === 'local' ? ` download="${escapeHtml(asset.name)}"` : ' target="_blank" rel="noopener noreferrer"'
+        const href =
+          asset.sourceType === 'url'
+            ? (asset.url ?? '#')
+            : asset.data
+              ? URL.createObjectURL(asset.data)
+              : '#'
+        const download =
+          asset.sourceType === 'local'
+            ? ` download="${escapeHtml(asset.name)}"`
+            : ' target="_blank" rel="noopener noreferrer"'
         return `<a href="${escapeHtml(href)}"${download} style="color:#a78bfa;text-decoration:underline;">📎 ${escapeHtml(label)}</a>`
-      } catch { return '' }
+      } catch {
+        return ''
+      }
     })
   }
 
@@ -193,7 +211,11 @@ export function resolveContent(
 }
 
 function escapeHtml(str: string): string {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
 function escapeRegex(str: string): string {

@@ -3,7 +3,6 @@ import StarterKit from '@tiptap/starter-kit'
 import { VariableNode } from '../../lib/tiptap-variable-node'
 import { AssetImageNode } from '../../extensions/AssetImageNode'
 import { AssetFileNode } from '../../extensions/AssetFileNode'
-import { useUIStore } from '../../stores/ui-store'
 import type { Asset } from '../../lib/types'
 import { useModalStore } from '@/stores/modal-store'
 
@@ -31,23 +30,36 @@ export default function TiptapEditor({ value, onChange }: TiptapEditorProps) {
   const handleAssetSelect = (asset: Asset) => {
     if (!editor) return
     if (asset.type === 'image') {
-      editor.chain().focus().insertContent({
-        type: 'assetImage',
-        attrs: { assetId: asset.id, width: '100%', height: null, marginTop: 0, marginRight: 0, marginBottom: 16, marginLeft: 0 }
-      }).run()
+      editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'assetImage',
+          attrs: {
+            assetId: asset.id,
+            width: '100%',
+            height: null,
+            marginTop: 0,
+            marginRight: 0,
+            marginBottom: 16,
+            marginLeft: 0
+          }
+        })
+        .run()
     } else {
-      editor.chain().focus().insertContent({
-        type: 'assetFile',
-        attrs: { assetId: asset.id, label: asset.name }
-      }).run()
+      editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'assetFile',
+          attrs: { assetId: asset.id, label: asset.name }
+        })
+        .run()
     }
   }
 
-  return (  
-    <div
-      className="flex flex-col gap-2"
-      onMouseDown={(e) => e.stopPropagation()}
-    >
+  return (
+    <div className="flex flex-col gap-2" onMouseDown={(e) => e.stopPropagation()}>
       {/* Toolbar */}
       <div className="flex gap-1 flex-wrap">
         <button
@@ -96,7 +108,7 @@ export default function TiptapEditor({ value, onChange }: TiptapEditorProps) {
           type="button"
           onMouseDown={(e) => {
             e.preventDefault()
-            modalStore.openModal("AssetManager", { mode: "select", onSelect: handleAssetSelect })
+            modalStore.openModal('AssetManager', { mode: 'select', onSelect: handleAssetSelect })
           }}
           className="px-2 py-1 text-xs rounded border bg-transparent border-zinc-600 text-zinc-400 hover:border-zinc-400"
           title="Insert asset"

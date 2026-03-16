@@ -35,16 +35,10 @@ interface InlineEditorProps {
   initialContent: string
   onClose: () => void
   onTextOverflowed?: (size: OverflowSize) => void
-  
 }
 type OverflowSize = { width: number; height: number }
 
-function InlineEditor({
-  nodeId,
-  initialContent,
-  onClose,
-  onTextOverflowed
-}: InlineEditorProps) {
+function InlineEditor({ nodeId, initialContent, onClose, onTextOverflowed }: InlineEditorProps) {
   const updateNodeContent = useProjectStore((s) => s.updateNodeContent)
 
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -53,16 +47,13 @@ function InlineEditor({
   const editor = useEditor({
     extensions: [StarterKit, VariableNode, AssetImageNode, AssetFileNode],
     content: parseContent(initialContent),
-    autofocus: true,
+    autofocus: true
   })
 
   const close = useCallback(() => {
-    updateNodeContent(
-      nodeId,
-      JSON.stringify(editor?.getJSON() ?? parseContent(initialContent))
-    )
+    updateNodeContent(nodeId, JSON.stringify(editor?.getJSON() ?? parseContent(initialContent)))
     onClose()
-  }, [nodeId])
+  }, [nodeId, editor, updateNodeContent, initialContent, onClose])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -128,7 +119,7 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
   const [editingContent, setEditingContent] = useState(false)
   const [titleValue, setTitleValue] = useState(nodeData.title ?? '')
   const titleInputRef = useRef<HTMLInputElement>(null)
-  
+
   // Sync titleValue when external changes come in (e.g. from inspector)
   useEffect(() => {
     if (!editingTitle) setTitleValue(nodeData.title ?? '')
@@ -148,11 +139,11 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
   }, [editingTitle])
 
   const commitTitle = useCallback(() => {
-    if(titleValue !== nodeData.title) {
+    if (titleValue !== nodeData.title) {
       updateNodeTitle(id as string, titleValue)
       setEditingTitle(false)
     }
-  }, [id, titleValue, updateNodeTitle])
+  }, [id, titleValue, updateNodeTitle, nodeData.title])
 
   const variation = nodeData.variationId ? variations[nodeData.variationId] : undefined
 
@@ -178,18 +169,18 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
 
   return (
     <div className={className}>
-      { selected && (
-      <NodeResizer
-        onResizeEnd={(_e, params) => {
-          updateNodeSize(id as string, params.width, params.height)
-          updateNodePosition(id as string, { x: params.x, y: params.y })
-        }}
-        minWidth={100}
-        minHeight={40}
-        maxWidth={1280}
-        maxHeight={1280}
-      />) 
-      }
+      {selected && (
+        <NodeResizer
+          onResizeEnd={(_e, params) => {
+            updateNodeSize(id as string, params.width, params.height)
+            updateNodePosition(id as string, { x: params.x, y: params.y })
+          }}
+          minWidth={100}
+          minHeight={40}
+          maxWidth={1280}
+          maxHeight={1280}
+        />
+      )}
       {/* four directional handles: each side can act as both source and target */}
       <Handle type="source" id="bottom" position={Position.Bottom} className={styles.nodeHandle} />
       <Handle type="source" id="top" position={Position.Top} className={styles.nodeHandle} />
@@ -199,20 +190,24 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
       {/* Header / Title area */}
       <div
         className={styles.header}
-        onDoubleClick={(_e) => {
+        onDoubleClick={() => {
           if (!variation && !editingTitle) setEditingTitle(true)
         }}
-        onPointerDown={(e) => { 
-          if(editingContent && !variation) {
-            (document.activeElement as HTMLElement | null)?.blur()
+        onPointerDown={(e) => {
+          if (editingContent && !variation) {
+            ;(document.activeElement as HTMLElement | null)?.blur()
             setEditingContent(false)
-            setEditingTitle(true);
+            setEditingTitle(true)
           }
-          e.stopPropagation();
-      }}
-        onMouseDown={(e)=>e.stopPropagation()}
+          e.stopPropagation()
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
       >
-        {nodeData.isStartNode && <span className={styles.startBadge} title="Start node">★</span>}
+        {nodeData.isStartNode && (
+          <span className={styles.startBadge} title="Start node">
+            ★
+          </span>
+        )}
         {nodeData.variationName && (
           <span className={styles.variationBadge}>{nodeData.variationName}</span>
         )}
@@ -225,9 +220,12 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
             onBlur={commitTitle}
             onKeyDown={(e) => {
               if (e.key === 'Enter') commitTitle()
-              if (e.key === 'Escape') { setTitleValue(nodeData.title ?? ''); setEditingTitle(false) }
+              if (e.key === 'Escape') {
+                setTitleValue(nodeData.title ?? '')
+                setEditingTitle(false)
+              }
             }}
-            onMouseDown={(e)=>e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
             placeholder="Title..."
           />
         ) : (
@@ -243,32 +241,33 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
           nodeId={id as string}
           initialContent={nodeData.content}
           onClose={() => setEditingContent(false)}
-          onTextOverflowed={(size) => { 
-            if(!width && size.height == 0) return;
-            if(!height && size.width == 0) return;
-            updateNodeSize(id as string, (width || 0) + size.width, (height || 0) + size.height) 
+          onTextOverflowed={(size) => {
+            if (!width && size.height == 0) return
+            if (!height && size.width == 0) return
+            updateNodeSize(id as string, (width || 0) + size.width, (height || 0) + size.height)
           }}
         />
       ) : (
         <div
-        style={{
+          style={{
             overflowWrap: 'break-word',
             wordBreak: 'break-word',
             whiteSpace: 'pre-wrap'
           }}
           className={`${styles.content} narrative-content`}
           dangerouslySetInnerHTML={{ __html: html }}
-          onDoubleClick={(_e) => { if(!editingContent) setEditingContent(true) }}
-          onPointerDown={(_e) => {
-            if(editingTitle) {
-              commitTitle();
-              setEditingTitle(false);
-              setEditingContent(true);
+          onDoubleClick={() => {
+            if (!editingContent) setEditingContent(true)
+          }}
+          onPointerDown={() => {
+            if (editingTitle) {
+              commitTitle()
+              setEditingTitle(false)
+              setEditingContent(true)
             }
           }}
         />
       )}
-
     </div>
   )
 })

@@ -41,7 +41,7 @@ function deriveSingles(selection: SelectionItem[]) {
   return {
     singleSelectedNodeId: nodes.length === 1 ? nodes[0]!.id : null,
     singleSelectedEdgeId: edges.length === 1 ? edges[0]!.id : null,
-    singleSelectedVariationId: variations.length === 1 ? variations[0]!.id : null,
+    singleSelectedVariationId: variations.length === 1 ? variations[0]!.id : null
   }
 }
 
@@ -127,7 +127,7 @@ export const useUIStore = create<UIState>()((set) => ({
 
   openInspector() {
     set({ inspectorOpen: true })
-  },
+  }
 }))
 
 export const ACTIVE_NARRATIVE_STORAGE_KEY = ACTIVE_NARRATIVE_KEY

@@ -41,14 +41,16 @@ export default defineConfig({
     }
   },
   server: {
-    allowedHosts: [
-      "fabletoria.nodeflow.stream"
-    ]
+    allowedHosts: ['fabletoria.nodeflow.stream']
   },
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
-    include: ['tests/unit/**/*.test.ts', 'tests/unit/**/*.test.tsx', 'tests/component/**/*.test.tsx']
+    include: [
+      'tests/unit/**/*.test.ts',
+      'tests/unit/**/*.test.tsx',
+      'tests/component/**/*.test.tsx'
+    ]
   }
 })

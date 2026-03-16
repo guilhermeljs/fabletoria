@@ -12,13 +12,13 @@ import {
   type FinalConnectionState,
   type EdgeChange,
   SelectionMode,
-  ConnectionMode,
+  ConnectionMode
 } from '@xyflow/react'
 import { useProjectStore } from '../../stores/project-store'
 import { useUIStore } from '../../stores/ui-store'
 import { useContextMenuStore } from '../../stores/context-menu-store'
 import StoryNodeComponent from './StoryNodeComponent'
-import type { EntityId } from '../../lib/types'
+import type { EntityId, StoryNode as StoryNodeData } from '../../lib/types'
 import NodeEdge from './NodeEdge'
 import { CursorTracker, RemoteCursors } from './RealtimeCursors'
 
@@ -49,24 +49,24 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
 
   const narrative = narratives[narrativeId]
 
-  const prevNodesRef = useRef<Map<string, { source: any; rfNode: Node }>>(
-    new Map()
-  );
+  const prevNodesRef = useRef<Map<string, { source: StoryNodeData; rfNode: Node }>>(new Map())
   // Build React Flow nodes from store (source of truth)
+
   const storeNodes = useMemo<Node[]>(() => {
-    const cached = prevNodesRef.current;
-    const result: Node[] = [];
+    const cached = prevNodesRef.current
+    const result: Node[] = []
 
     for (const n of Object.values(nodes)) {
-      if (!n || n.narrativeId !== narrativeId) continue;
+      if (!n || n.narrativeId !== narrativeId) continue
 
-      const variation = n.variationId ? variations[n.variationId] : undefined;
-      const prev = cached.get(n.id);
+      const variation = n.variationId ? variations[n.variationId] : undefined
+      // eslint-disable-next-line react-hooks/refs
+      const prev = cached.get(n.id)
       const isStartNode = narrative?.startNodeId === n.id
 
       if (prev && prev.source === n && prev.rfNode.data.isStartNode === isStartNode) {
-        result.push(prev.rfNode);
-        continue;
+        result.push(prev.rfNode)
+        continue
       }
 
       const rfNode: Node = {
@@ -80,22 +80,25 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
           title: n.title ?? '',
           isStartNode,
           variationId: n.variationId ?? undefined,
-          variationName: variation?.name,
-        },
-      };
+          variationName: variation?.name
+        }
+      }
 
-      cached.set(n.id, { source: n, rfNode });
-      result.push(rfNode);
+      // eslint-disable-next-line react-hooks/refs
+      cached.set(n.id, { source: n, rfNode })
+      result.push(rfNode)
     }
 
+    // eslint-disable-next-line react-hooks/refs
     for (const id of cached.keys()) {
       if (!nodes[id] || nodes[id].narrativeId !== narrativeId) {
-        cached.delete(id);
+        // eslint-disable-next-line react-hooks/refs
+        cached.delete(id)
       }
     }
 
-    return result;
-  }, [nodes, narrativeId, variations, narrative?.startNodeId]);
+    return result
+  }, [nodes, narrativeId, variations, narrative?.startNodeId])
 
   // Local display state — React Flow reads this for smooth real-time updates
   const [displayNodes, setDisplayNodes] = useState<Node[]>(storeNodes)
@@ -104,27 +107,30 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
   // but not while a drag is in progress (would snap node back to stored position)
   useEffect(() => {
     setDisplayNodes((prev) => {
-      if (prev.some((n) => n.dragging)) return prev;
+      if (prev.some((n) => n.dragging)) return prev
 
-      const selectionMap = new Map(prev.map((n) => [n.id, n.selected]));
+      const selectionMap = new Map(prev.map((n) => [n.id, n.selected]))
 
       return storeNodes.map((n) => ({
         ...n,
-        selected: selectionMap.get(n.id) ?? false,
-      }));
-    });
-  }, [storeNodes]);
+        selected: selectionMap.get(n.id) ?? false
+      }))
+    })
+  }, [storeNodes])
 
   // Build React Flow edges — no `selected` field
   const rfNodes = displayNodes
   const nodeIds = new Set(rfNodes.map((n) => n.id))
   const rfEdges: Edge[] = Object.values(connections)
-    .filter((c) => c?.narrativeId === narrativeId && nodeIds.has(c.sourceNodeId) && nodeIds.has(c.targetNodeId))
+    .filter(
+      (c) =>
+        c?.narrativeId === narrativeId && nodeIds.has(c.sourceNodeId) && nodeIds.has(c.targetNodeId)
+    )
     .map((c) => {
       if (!c) return null
       return {
         id: c.id,
-        selected: selection.some(n=>n.id===c.id),
+        selected: selection.some((n) => n.id === c.id),
         source: c.sourceNodeId,
         target: c.targetNodeId,
         sourceHandle: c.sourceHandle ?? null,
@@ -165,16 +171,16 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
           removeFromSelection(change.id)
           store.deleteNode(change.id)
         }
-        if(change.type === 'select') {
-          if(change.selected) {
+        if (change.type === 'select') {
+          if (change.selected) {
             addToSelection({ type: 'node', id: change.id })
-          }else{
+          } else {
             removeFromSelection(change.id)
           }
         }
       }
     },
-    [store]
+    [store, addToSelection, removeFromSelection]
   )
 
   const onEdgesChange = useCallback(
@@ -184,59 +190,65 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
           removeFromSelection(change.id)
           store.deleteConnection(change.id)
         }
-        if(change.type === 'select') {
-          if(change.selected) {
+        if (change.type === 'select') {
+          if (change.selected) {
             addToSelection({ type: 'edge', id: change.id })
-          }else{
+          } else {
             removeFromSelection(change.id)
           }
         }
       }
     },
-    [store]
+    [store, addToSelection, removeFromSelection]
   )
 
   const handleAddNode = useCallback(
     (clientX: number, clientY: number) => {
       const position = screenToFlowPosition({ x: clientX, y: clientY })
       const nodeId = store.createNode(narrativeId, { position })
-      if(rfNodes?.length === 0) {
+      if (rfNodes?.length === 0) {
         store.setStartNode(nodeId.narrativeId, nodeId.id)
       }
     },
-    [store, narrativeId, screenToFlowPosition]
+    [store, narrativeId, screenToFlowPosition, rfNodes?.length]
   )
 
-  const onNodeContextMenu = useCallback((e: React.MouseEvent, node: Node) => {
-    e.preventDefault()
-    openMenu(e.clientX, e.clientY, [
-      {
-        label: 'Set as Start Node',
-        icon: 'Play',
-        onClick: () => store.setStartNode(narrativeId, node.id),
-      },
-      { type: 'separator' },
-      {
-        label: 'Delete Node',
-        icon: 'Trash2',
-        variant: 'danger',
-        onClick: () => store.deleteNode(node.id),
-      },
-    ])
-  }, [openMenu, store, narrativeId])
+  const onNodeContextMenu = useCallback(
+    (e: React.MouseEvent, node: Node) => {
+      e.preventDefault()
+      openMenu(e.clientX, e.clientY, [
+        {
+          label: 'Set as Start Node',
+          icon: 'Play',
+          onClick: () => store.setStartNode(narrativeId, node.id)
+        },
+        { type: 'separator' },
+        {
+          label: 'Delete Node',
+          icon: 'Trash2',
+          variant: 'danger',
+          onClick: () => store.deleteNode(node.id)
+        }
+      ])
+    },
+    [openMenu, store, narrativeId]
+  )
 
-  const onPaneContextMenu = useCallback((e: MouseEvent | React.MouseEvent) => {
-    e.preventDefault()
-    const clientX = (e as React.MouseEvent).clientX
-    const clientY = (e as React.MouseEvent).clientY
-    openMenu(clientX, clientY, [
-      {
-        label: 'Add Story Piece',
-        icon: 'Plus',
-        onClick: () => handleAddNode(clientX, clientY),
-      },
-    ])
-  }, [openMenu, handleAddNode])
+  const onPaneContextMenu = useCallback(
+    (e: MouseEvent | React.MouseEvent) => {
+      e.preventDefault()
+      const clientX = (e as React.MouseEvent).clientX
+      const clientY = (e as React.MouseEvent).clientY
+      openMenu(clientX, clientY, [
+        {
+          label: 'Add Story Piece',
+          icon: 'Plus',
+          onClick: () => handleAddNode(clientX, clientY)
+        }
+      ])
+    },
+    [openMenu, handleAddNode]
+  )
 
   // Edge dropped on empty space → create a new connected node
   const onConnectEnd = useCallback(
@@ -245,8 +257,8 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
       const sourceNodeId = connectionState.fromNode?.id
       if (!sourceNodeId) return
 
-      const clientX = 'clientX' in event ? event.clientX : event.touches[0]?.clientX ?? 0
-      const clientY = 'clientY' in event ? event.clientY : event.touches[0]?.clientY ?? 0
+      const clientX = 'clientX' in event ? event.clientX : (event.touches[0]?.clientX ?? 0)
+      const clientY = 'clientY' in event ? event.clientY : (event.touches[0]?.clientY ?? 0)
       const flowPos = screenToFlowPosition({ x: clientX, y: clientY })
 
       pendingConnectionRef.current = { sourceNodeId }
@@ -254,16 +266,11 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
       // (fired by the same mouseup that ends the drag) runs first.
       setTimeout(() => {
         const newNode = store.createNode(narrativeId, { position: flowPos })
-        useUIStore.getState().setSelection([{ type: "node", id: newNode.id }])
-        store.createConnection(
-          sourceNodeId,
-          newNode.id,
-          connectionState.fromHandle?.position,
-          null
-        )
+        useUIStore.getState().setSelection([{ type: 'node', id: newNode.id }])
+        store.createConnection(sourceNodeId, newNode.id, connectionState.fromHandle?.position, null)
       }, 0)
     },
-    [screenToFlowPosition]
+    [screenToFlowPosition, narrativeId, store]
   )
 
   // Drag-drop: variation onto canvas
@@ -323,7 +330,7 @@ function NarrativeCanvasInner({ narrativeId }: NarrativeCanvasProps) {
       )}
 
       <CursorTracker narrativeId={narrativeId} containerRef={containerRef}></CursorTracker>
-      <RemoteCursors narrativeId={narrativeId} key={"remote"}/>
+      <RemoteCursors narrativeId={narrativeId} key={'remote'} />
     </div>
   )
 }

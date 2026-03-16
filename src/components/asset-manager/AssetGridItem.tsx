@@ -13,7 +13,7 @@ interface Props {
 const FILE_ICONS: Record<string, IconName> = {
   pdf: 'FileText',
   txt: 'FileText',
-  md: 'FileText',
+  md: 'FileText'
 }
 
 export default function AssetGridItem({ asset, isSelected, onClick, mode }: Props) {
@@ -22,6 +22,7 @@ export default function AssetGridItem({ asset, isSelected, onClick, mode }: Prop
   useEffect(() => {
     if (asset.type === 'image' && asset.sourceType === 'local' && asset.data) {
       const url = URL.createObjectURL(asset.data)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setObjectUrl(url)
       return () => URL.revokeObjectURL(url)
     }
@@ -63,7 +64,9 @@ export default function AssetGridItem({ asset, isSelected, onClick, mode }: Prop
                 style={{ width: `${asset.uploadProgress}%` }}
               />
             </div>
-            <BaseText size="xs" variant="dim">{asset.uploadProgress}%</BaseText>
+            <BaseText size="xs" variant="dim">
+              {asset.uploadProgress}%
+            </BaseText>
           </div>
         )}
 

@@ -7,15 +7,16 @@ import { useAssetStore } from '../stores/asset-store'
 // ── NodeView component ────────────────────────────────────────────────────────
 
 function AssetImageView({ node, updateAttributes, selected, editor }: NodeViewProps) {
-  const { assetId, width, height, marginTop, marginRight, marginBottom, marginLeft } = node.attrs as {
-    assetId: string
-    width: number | string
-    height: number | null
-    marginTop: number
-    marginRight: number
-    marginBottom: number
-    marginLeft: number
-  }
+  const { assetId, width, height, marginTop, marginRight, marginBottom, marginLeft } =
+    node.attrs as {
+      assetId: string
+      width: number | string
+      height: number | null
+      marginTop: number
+      marginRight: number
+      marginBottom: number
+      marginLeft: number
+    }
 
   const asset = useAssetStore((s) => s.assets[assetId])
   const [objectUrl, setObjectUrl] = useState<string | null>(null)
@@ -24,6 +25,7 @@ function AssetImageView({ node, updateAttributes, selected, editor }: NodeViewPr
     if (!asset) return undefined
     if (asset.sourceType === 'local' && asset.data) {
       const url = URL.createObjectURL(asset.data)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setObjectUrl(url)
       return () => URL.revokeObjectURL(url)
     }
@@ -145,7 +147,9 @@ function AssetImageView({ node, updateAttributes, selected, editor }: NodeViewPr
                   <input
                     type="number"
                     value={node.attrs[`margin${side}`] as number}
-                    onChange={(e) => updateAttributes({ [`margin${side}`]: Number(e.target.value) })}
+                    onChange={(e) =>
+                      updateAttributes({ [`margin${side}`]: Number(e.target.value) })
+                    }
                     style={{
                       width: 36,
                       background: '#27272a',

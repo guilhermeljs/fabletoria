@@ -146,6 +146,7 @@ export const BaseBalloon: React.FC<BaseBalloonProps> = ({
 
   useEffect(() => {
     if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPosition(null)
       return
     }
@@ -191,18 +192,13 @@ export const BaseBalloon: React.FC<BaseBalloonProps> = ({
             aria-modal="false"
           >
             <div className="relative rounded-tk-md border border-brand-primary bg-bg-surface p-tk-3 shadow-elevation-4 text-text-main w-max max-w-[min(280px,calc(100vw-32px))]">
-              {title && (
-                typeof title === 'string' ? (
+              {title &&
+                (typeof title === 'string' ? (
                   <div className="mb-tk-2 font-semibold text-tk-sm">{title}</div>
                 ) : (
                   <div className="mb-tk-2">{title}</div>
-                )
-              )}
-              {typeof message === 'string' ? (
-                <div className="text-tk-sm">{message}</div>
-              ) : (
-                message
-              )}
+                ))}
+              {typeof message === 'string' ? <div className="text-tk-sm">{message}</div> : message}
 
               <div className="mt-tk-2 flex justify-end">
                 <BaseButton size="sm" variant="ghost" onClick={onClose}>

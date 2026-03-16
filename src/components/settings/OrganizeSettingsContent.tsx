@@ -8,38 +8,40 @@ export function OrganizeSettingsContent() {
   return (
     <div className="space-y-tk-6">
       <header>
-        <BaseText as="h3" size="lg" weight="semibold">Organize Button</BaseText>
+        <BaseText as="h3" size="lg" weight="semibold">
+          Organize Button
+        </BaseText>
         <BaseText size="sm" variant="dim" className="block mt-tk-1">
           Configure how the canvas auto-layout behaves.
         </BaseText>
       </header>
 
       <div className="space-y-tk-4">
-        <BaseInput 
+        <BaseInput
           label="Horizontal Ratio (px/char)"
-          type="number" 
-          value={settings.organizeRatio} 
+          type="number"
+          value={settings.organizeRatio}
           onChange={(e) => settings.setOrganizeRatio(Number(e.target.value))}
         />
 
-        <BaseInput 
+        <BaseInput
           label="Maximum Width (px)"
-          type="number" 
-          value={settings.organizeMaxWidth} 
+          type="number"
+          value={settings.organizeMaxWidth}
           onChange={(e) => settings.setOrganizeMaxWidth(Number(e.target.value))}
         />
 
         <div className="grid grid-cols-2 gap-tk-4">
-          <BaseInput 
+          <BaseInput
             label="Horizontal Gap"
-            type="number" 
-            value={settings.organizeHGap} 
+            type="number"
+            value={settings.organizeHGap}
             onChange={(e) => settings.setOrganizeHGap(Number(e.target.value))}
           />
-          <BaseInput 
+          <BaseInput
             label="Vertical Gap"
-            type="number" 
-            value={settings.organizeVGap} 
+            type="number"
+            value={settings.organizeVGap}
             onChange={(e) => settings.setOrganizeVGap(Number(e.target.value))}
           />
         </div>

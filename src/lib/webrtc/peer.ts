@@ -5,7 +5,7 @@ import type { SyncMessage } from './types'
 
 const ICE_SERVERS: RTCIceServer[] = [
   { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' }
 ]
 
 function createPeerConnection(): RTCPeerConnection {
@@ -71,7 +71,7 @@ export class HostPeer {
 
     wireChannel(this.channel, {
       onOpen: () => this.onConnected?.(),
-      onMessage: (msg) => this.onMessage?.(msg),
+      onMessage: (msg) => this.onMessage?.(msg)
     })
 
     const offer = await this.pc.createOffer()
@@ -128,7 +128,7 @@ export class ClientPeer {
       this.channel = e.channel
       wireChannel(this.channel, {
         onOpen: () => this.onConnected?.(),
-        onMessage: (msg) => this.onMessage?.(msg),
+        onMessage: (msg) => this.onMessage?.(msg)
       })
     }
 

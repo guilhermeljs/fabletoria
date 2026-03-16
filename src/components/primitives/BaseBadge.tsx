@@ -1,14 +1,14 @@
-import React from 'react';
+import React from 'react'
 
-type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info' | 'ghost';
-type BadgeSize = 'xs' | 'sm' | 'md';
+type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info' | 'ghost'
+type BadgeSize = 'xs' | 'sm' | 'md'
 
 interface BaseBadgeProps {
-  children: React.ReactNode;
-  variant?: BadgeVariant;
-  size?: BadgeSize;
-  rounded?: boolean;
-  className?: string;
+  children: React.ReactNode
+  variant?: BadgeVariant
+  size?: BadgeSize
+  rounded?: boolean
+  className?: string
 }
 
 export const BaseBadge: React.FC<BaseBadgeProps> = ({
@@ -16,15 +16,15 @@ export const BaseBadge: React.FC<BaseBadgeProps> = ({
   variant = 'default',
   size = 'sm',
   rounded = false,
-  className = '',
+  className = ''
 }) => {
-  const baseClasses = 'inline-flex items-center px-tk-2 py-tk-0.5 font-medium transition-colors';
-  
+  const baseClasses = 'inline-flex items-center px-tk-2 py-tk-0.5 font-medium transition-colors'
+
   const sizeClasses = {
     xs: 'text-[10px] px-tk-1 py-0',
     sm: 'text-tk-xs px-tk-2 py-tk-0.5',
-    md: 'text-tk-sm px-tk-3 py-tk-1',
-  };
+    md: 'text-tk-sm px-tk-3 py-tk-1'
+  }
 
   const variantClasses = {
     default: 'bg-bg-surface text-text-dim border border-border-main',
@@ -33,10 +33,10 @@ export const BaseBadge: React.FC<BaseBadgeProps> = ({
     warning: 'bg-status-warning/20 text-status-warning border border-status-warning/30',
     error: 'bg-status-error/20 text-status-error border border-status-error/30',
     info: 'bg-status-info/20 text-status-info border border-status-info/30',
-    ghost: 'bg-transparent text-text-dim border border-transparent',
-  };
+    ghost: 'bg-transparent text-text-dim border border-transparent'
+  }
 
-  const roundedClasses = rounded ? 'rounded-full' : 'rounded-tk-sm';
+  const roundedClasses = rounded ? 'rounded-full' : 'rounded-tk-sm'
 
   const finalClassName = `
     ${baseClasses}
@@ -44,11 +44,7 @@ export const BaseBadge: React.FC<BaseBadgeProps> = ({
     ${variantClasses[variant]}
     ${roundedClasses}
     ${className}
-  `.trim();
+  `.trim()
 
-  return (
-    <span className={finalClassName}>
-      {children}
-    </span>
-  );
-};
+  return <span className={finalClassName}>{children}</span>
+}

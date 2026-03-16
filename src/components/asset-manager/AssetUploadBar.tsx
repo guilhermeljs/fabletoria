@@ -94,7 +94,7 @@ export default function AssetUploadBar({ onFileSelect, onUrlSubmit, onFolderCrea
             active={isAddMenuOpen}
           >
             New
-            <BaseIcon name="Plus" size={16} className='ml-tk-1' />
+            <BaseIcon name="Plus" size={16} className="ml-tk-1" />
           </BaseButton>
 
           {isAddMenuOpen && (
@@ -134,9 +134,25 @@ export default function AssetUploadBar({ onFileSelect, onUrlSubmit, onFolderCrea
       {/* URL input */}
       {showUrl && (
         <div className="flex items-end gap-tk-2 p-tk-3 bg-bg-main rounded-tk-lg border border-border-main">
-          <BaseInput label="Asset URL" value={urlValue} onChange={(e) => setUrlValue(e.target.value)} placeholder="https://example.com/image.png" fullWidth />
-          <BaseInput label="Asset Name" value={urlName} onChange={(e) => setUrlName(e.target.value)} placeholder="e.g. hero-image.png" fullWidth />
-          <BaseButton onClick={handleUrlConfirm} disabled={!urlValue.trim() || !urlName.trim()} size="md">
+          <BaseInput
+            label="Asset URL"
+            value={urlValue}
+            onChange={(e) => setUrlValue(e.target.value)}
+            placeholder="https://example.com/image.png"
+            fullWidth
+          />
+          <BaseInput
+            label="Asset Name"
+            value={urlName}
+            onChange={(e) => setUrlName(e.target.value)}
+            placeholder="e.g. hero-image.png"
+            fullWidth
+          />
+          <BaseButton
+            onClick={handleUrlConfirm}
+            disabled={!urlValue.trim() || !urlName.trim()}
+            size="md"
+          >
             Confirm
           </BaseButton>
         </div>
@@ -145,7 +161,17 @@ export default function AssetUploadBar({ onFileSelect, onUrlSubmit, onFolderCrea
       {/* New folder input */}
       {showFolder && (
         <div className="flex items-end gap-tk-2 p-tk-3 bg-bg-main rounded-tk-lg border border-border-main">
-          <BaseInput label="Folder Name" value={folderName} onChange={(e) => setFolderName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleFolderConfirm() }} placeholder="New folder name" autoFocus fullWidth />
+          <BaseInput
+            label="Folder Name"
+            value={folderName}
+            onChange={(e) => setFolderName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleFolderConfirm()
+            }}
+            placeholder="New folder name"
+            autoFocus
+            fullWidth
+          />
           <BaseButton onClick={handleFolderConfirm} disabled={!folderName.trim()} size="md">
             Create
           </BaseButton>

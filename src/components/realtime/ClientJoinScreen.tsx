@@ -25,6 +25,7 @@ export default function ClientJoinScreen() {
   useEffect(() => {
     const offer = getOfferFromUrl()
     if (!offer) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInitError('Invalid link: connection code not found.')
       return
     }

@@ -3,7 +3,7 @@ import type {
   StoryNodeMap,
   ConnectionMap,
   ComponentMap,
-  VariationMap,
+  VariationMap
 } from '../types'
 
 // ── Project snapshot ──────────────────────────────────────────────────────────
@@ -39,20 +39,20 @@ export type SyncMessage =
  *   connected → disconnected
  */
 export type ConnectionStatus =
-  | 'idle'           // No active session
-  | 'preparing'      // Host: generating offer | Client: processing offer & creating answer
+  | 'idle' // No active session
+  | 'preparing' // Host: generating offer | Client: processing offer & creating answer
   | 'waiting-answer' // Host: answer code input shown | Client: answer shown, waiting for host
-  | 'connecting'     // ICE negotiation in progress
-  | 'connected'      // Data channel open, syncing live
-  | 'failed'         // Unrecoverable error
-  | 'disconnected'   // Was connected, peer went away
+  | 'connecting' // ICE negotiation in progress
+  | 'connected' // Data channel open, syncing live
+  | 'failed' // Unrecoverable error
+  | 'disconnected' // Was connected, peer went away
 
 // ── App mode ──────────────────────────────────────────────────────────────────
 
 export type AppMode =
   | 'standalone' // Normal offline mode
-  | 'host'       // Sharing the project via WebRTC
-  | 'client'     // Viewing a hosted project via WebRTC (read-only DB)
+  | 'host' // Sharing the project via WebRTC
+  | 'client' // Viewing a hosted project via WebRTC (read-only DB)
 
 // ── Invite (host side) ────────────────────────────────────────────────────────
 
@@ -61,12 +61,12 @@ export type AppMode =
  * Each invite corresponds to one HostPeer and one potential client.
  */
 export type InviteStatus =
-  | 'preparing'      // Generating the offer
+  | 'preparing' // Generating the offer
   | 'waiting-answer' // Offer ready; waiting for client's answer code
-  | 'connecting'     // Answer accepted; ICE negotiation in progress
-  | 'connected'      // Data channel open; client is live
-  | 'failed'         // Unrecoverable error
-  | 'disconnected'   // Was connected, client went away
+  | 'connecting' // Answer accepted; ICE negotiation in progress
+  | 'connected' // Data channel open; client is live
+  | 'failed' // Unrecoverable error
+  | 'disconnected' // Was connected, client went away
 
 export interface InviteEntry {
   /** Monotonically-increasing index encoded into both the offer link and answer code. */

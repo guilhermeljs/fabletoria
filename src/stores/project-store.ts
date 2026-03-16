@@ -50,7 +50,14 @@ export interface ProjectState {
   // ── Node actions ──────────────────────────────────────────────────────────
   createNode: (
     narrativeId: EntityId,
-    opts?: { position?: { x: number; y: number }; width?: number; height?: number; variationId?: EntityId; title?: string; content?: string }
+    opts?: {
+      position?: { x: number; y: number }
+      width?: number
+      height?: number
+      variationId?: EntityId
+      title?: string
+      content?: string
+    }
   ) => StoryNode
   updateNodeContent: (id: EntityId, content: string) => void
   updateNodeTitle: (id: EntityId, title: string) => void
@@ -78,7 +85,10 @@ export interface ProjectState {
   deleteConnection: (id: EntityId) => void
 
   // ── Component actions ─────────────────────────────────────────────────────
-  createComponent: (name: string, opts?: { schema?: FieldSchema[]; defaults?: Record<string, string> }) => Component
+  createComponent: (
+    name: string,
+    opts?: { schema?: FieldSchema[]; defaults?: Record<string, string> }
+  ) => Component
   renameComponent: (id: EntityId, name: string) => void
   updateComponentSchema: (id: EntityId, schema: FieldSchema[]) => void
   updateComponentDefaults: (id: EntityId, defaults: Record<string, string>) => void
@@ -107,7 +117,9 @@ function now(): number {
 
 function persist(fn: () => Promise<void>): void {
   if (!_persistenceEnabled) return
-  fn().then(() => checkStorageQuota()).catch(console.error)
+  fn()
+    .then(() => checkStorageQuota())
+    .catch(console.error)
 }
 
 // ── Store ────────────────────────────────────────────────────────────────────
@@ -142,7 +154,9 @@ export const useProjectStore = create<ProjectState>()(
       set((s) => {
         const narrative = s.narratives[id]
         if (!narrative) return s
-        return { narratives: { ...s.narratives, [id]: { ...narrative, name: normalized, updatedAt: ts } } }
+        return {
+          narratives: { ...s.narratives, [id]: { ...narrative, name: normalized, updatedAt: ts } }
+        }
       })
       persist(async () => {
         await db.narratives.update(id, { name: normalized, updatedAt: ts })
@@ -190,7 +204,10 @@ export const useProjectStore = create<ProjectState>()(
         id: newId(),
         narrativeId,
         title: opts.title ?? variation?.defaultTitle ?? '',
-        content: opts.content ?? variation?.defaultContent ?? JSON.stringify({ type: 'doc', content: [{ type: 'paragraph' }] }),
+        content:
+          opts.content ??
+          variation?.defaultContent ??
+          JSON.stringify({ type: 'doc', content: [{ type: 'paragraph' }] }),
         position: opts.position ?? { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 },
         width: opts.width ?? 200,
         height: opts.height ?? 100,
@@ -268,7 +285,11 @@ export const useProjectStore = create<ProjectState>()(
 
         const newNarratives = { ...s.narratives }
         if (newNarratives[nodeToDelete.narrativeId]?.startNodeId === id) {
-          newNarratives[nodeToDelete.narrativeId] = { ...newNarratives[nodeToDelete.narrativeId]!, startNodeId: null, updatedAt: now() }
+          newNarratives[nodeToDelete.narrativeId] = {
+            ...newNarratives[nodeToDelete.narrativeId]!,
+            startNodeId: null,
+            updatedAt: now()
+          }
         }
 
         return { nodes: newNodes, connections: newConnections, narratives: newNarratives }
@@ -279,7 +300,10 @@ export const useProjectStore = create<ProjectState>()(
           await db.nodes.delete(id)
           await db.connections.bulkDelete(relatedConnectionIds)
           if (narratives[nodeToDelete.narrativeId]?.startNodeId === id) {
-            await db.narratives.update(nodeToDelete.narrativeId, { startNodeId: null, updatedAt: now() })
+            await db.narratives.update(nodeToDelete.narrativeId, {
+              startNodeId: null,
+              updatedAt: now()
+            })
           }
         })
       })
@@ -291,7 +315,10 @@ export const useProjectStore = create<ProjectState>()(
         const narrative = s.narratives[narrativeId]
         if (!narrative) return s
         return {
-          narratives: { ...s.narratives, [narrativeId]: { ...narrative, startNodeId: nodeId, updatedAt: ts } }
+          narratives: {
+            ...s.narratives,
+            [narrativeId]: { ...narrative, startNodeId: nodeId, updatedAt: ts }
+          }
         }
       })
       persist(async () => {
@@ -336,9 +363,11 @@ export const useProjectStore = create<ProjectState>()(
         return { connections: { ...s.connections, [id]: updated } }
       })
       persist(async () => {
-        const updateObj: any = { sourceHandle, updatedAt: now() }
-        if (targetHandle !== undefined) updateObj.targetHandle = targetHandle
-        await db.connections.update(id, updateObj)
+        await db.connections.update(id, {
+          ...(sourceHandle !== undefined ? { sourceHandle } : {}),
+          ...(targetHandle !== undefined ? { targetHandle } : {}),
+          updatedAt: now()
+        })
       })
     },
 
@@ -398,18 +427,28 @@ export const useProjectStore = create<ProjectState>()(
       set((s) => {
         const component = s.components[id]
         if (!component) return s
-        return { components: { ...s.components, [id]: { ...component, defaults: { ...component.defaults, ...defaults }, updatedAt: ts } } }
+        return {
+          components: {
+            ...s.components,
+            [id]: { ...component, defaults: { ...component.defaults, ...defaults }, updatedAt: ts }
+          }
+        }
       })
       persist(async () => {
         const existing = await db.components.get(id)
         if (!existing) return
-        await db.components.update(id, { defaults: { ...(existing.defaults ?? {}), ...defaults }, updatedAt: ts })
+        await db.components.update(id, {
+          defaults: { ...(existing.defaults ?? {}), ...defaults },
+          updatedAt: ts
+        })
       })
     },
 
     deleteComponent(id) {
       const { variations } = get()
-      const variationIds = Object.keys(variations).filter((vid) => variations[vid]?.componentId === id)
+      const variationIds = Object.keys(variations).filter(
+        (vid) => variations[vid]?.componentId === id
+      )
       set((s) => {
         const newComponents = { ...s.components }
         delete newComponents[id]
@@ -456,14 +495,14 @@ export const useProjectStore = create<ProjectState>()(
       return { variation }
     },
 
-    
-
     updateVariationDefaultTitle(id, defaultTitle) {
       const ts = now()
       set((s) => {
         const variation = s.variations[id]
         if (!variation) return s
-        return { variations: { ...s.variations, [id]: { ...variation, defaultTitle, updatedAt: ts } } }
+        return {
+          variations: { ...s.variations, [id]: { ...variation, defaultTitle, updatedAt: ts } }
+        }
       })
       persist(async () => {
         await db.variations.update(id, { defaultTitle, updatedAt: ts })
@@ -475,7 +514,9 @@ export const useProjectStore = create<ProjectState>()(
       set((s) => {
         const variation = s.variations[id]
         if (!variation) return s
-        return { variations: { ...s.variations, [id]: { ...variation, defaultContent, updatedAt: ts } } }
+        return {
+          variations: { ...s.variations, [id]: { ...variation, defaultContent, updatedAt: ts } }
+        }
       })
       persist(async () => {
         await db.variations.update(id, { defaultContent, updatedAt: ts })

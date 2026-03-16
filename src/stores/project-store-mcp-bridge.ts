@@ -107,7 +107,11 @@ export function initMcpBridge(): (() => void) | undefined {
           useProjectStore.setState((s) => ({
             nodes: {
               ...s.nodes,
-              [nodeId]: { ...s.nodes[nodeId]!, variationId: variationId ?? null, updatedAt: Date.now() }
+              [nodeId]: {
+                ...s.nodes[nodeId]!,
+                variationId: variationId ?? null,
+                updatedAt: Date.now()
+              }
             }
           }))
           reply(replyChannel, ok({ nodeId, variationId: variationId ?? null }))
@@ -164,15 +168,24 @@ export function initMcpBridge(): (() => void) | undefined {
           const sourceNode = store.nodes[sourceNodeId]
           const targetNode = store.nodes[targetNodeId]
           if (!sourceNode) {
-            reply(replyChannel, err('NOT_FOUND', `Node '${sourceNodeId}' not found in narrative '${narrativeId}'`))
+            reply(
+              replyChannel,
+              err('NOT_FOUND', `Node '${sourceNodeId}' not found in narrative '${narrativeId}'`)
+            )
             break
           }
           if (!targetNode) {
-            reply(replyChannel, err('NOT_FOUND', `Node '${targetNodeId}' not found in narrative '${narrativeId}'`))
+            reply(
+              replyChannel,
+              err('NOT_FOUND', `Node '${targetNodeId}' not found in narrative '${narrativeId}'`)
+            )
             break
           }
           if (sourceNode.narrativeId !== targetNode.narrativeId) {
-            reply(replyChannel, err('VALIDATION_ERROR', 'Cannot connect nodes from different narratives'))
+            reply(
+              replyChannel,
+              err('VALIDATION_ERROR', 'Cannot connect nodes from different narratives')
+            )
             break
           }
           const connection = store.createConnection(sourceNodeId, targetNodeId)
@@ -213,12 +226,25 @@ export function initMcpBridge(): (() => void) | undefined {
           }
           for (const field of schema) {
             if (field.type !== 'string' && field.type !== 'number') {
-              reply(replyChannel, err('INVALID_SCHEMA', `Field '${field.name}' has invalid type '${field.type}' — must be 'string' or 'number'`))
+              reply(
+                replyChannel,
+                err(
+                  'INVALID_SCHEMA',
+                  `Field '${field.name}' has invalid type '${field.type}' — must be 'string' or 'number'`
+                )
+              )
               break
             }
           }
           const component = store.createComponent(name.trim(), { schema })
-          reply(replyChannel, ok({ componentId: component.id, name: component.name, fieldCount: component.schema.length }))
+          reply(
+            replyChannel,
+            ok({
+              componentId: component.id,
+              name: component.name,
+              fieldCount: component.schema.length
+            })
+          )
           break
         }
 
@@ -234,9 +260,18 @@ export function initMcpBridge(): (() => void) | undefined {
           }
           const result = store.createVariation(componentId, name, values ?? {})
           if ('error' in result) {
-            reply(replyChannel, err('DUPLICATE_NAME', `Variation name '${name}' already exists — choose a different name`))
+            reply(
+              replyChannel,
+              err(
+                'DUPLICATE_NAME',
+                `Variation name '${name}' already exists — choose a different name`
+              )
+            )
           } else {
-            reply(replyChannel, ok({ variationId: result.variation.id, name: result.variation.name, componentId }))
+            reply(
+              replyChannel,
+              ok({ variationId: result.variation.id, name: result.variation.name, componentId })
+            )
           }
           break
         }
@@ -263,7 +298,10 @@ export function initMcpBridge(): (() => void) | undefined {
           if (values) {
             store.updateVariationValues(variationId, values)
           }
-          reply(replyChannel, ok({ variationId, name: name ?? variation.name, values: values ?? variation.values }))
+          reply(
+            replyChannel,
+            ok({ variationId, name: name ?? variation.name, values: values ?? variation.values })
+          )
           break
         }
 
@@ -299,14 +337,18 @@ export function initMcpBridge(): (() => void) | undefined {
 
         case 'query:listNodes': {
           const narrativeId = payload['narrativeId'] as string | undefined
-          const nodes = Object.values(store.nodes).filter((n) => !narrativeId || n?.narrativeId === narrativeId)
+          const nodes = Object.values(store.nodes).filter(
+            (n) => !narrativeId || n?.narrativeId === narrativeId
+          )
           reply(replyChannel, ok({ nodes }))
           break
         }
 
         case 'query:listEdges': {
           const narrativeId = payload['narrativeId'] as string | undefined
-          const edges = Object.values(store.connections).filter((c) => !narrativeId || c?.narrativeId === narrativeId)
+          const edges = Object.values(store.connections).filter(
+            (c) => !narrativeId || c?.narrativeId === narrativeId
+          )
           reply(replyChannel, ok({ edges }))
           break
         }
@@ -319,7 +361,9 @@ export function initMcpBridge(): (() => void) | undefined {
 
         case 'query:listVariations': {
           const componentId = payload['componentId'] as string | undefined
-          const variations = Object.values(store.variations).filter((v) => !componentId || v?.componentId === componentId)
+          const variations = Object.values(store.variations).filter(
+            (v) => !componentId || v?.componentId === componentId
+          )
           reply(replyChannel, ok({ variations }))
           break
         }
@@ -331,10 +375,17 @@ export function initMcpBridge(): (() => void) | undefined {
             break
           }
           const nodes = Object.values(store.nodes).filter((n) => n?.narrativeId === narrativeId)
-          const edges = Object.values(store.connections).filter((c) => c?.narrativeId === narrativeId)
+          const edges = Object.values(store.connections).filter(
+            (c) => c?.narrativeId === narrativeId
+          )
 
           // build a simple linear traversal starting from startNodeId if present
-          const linear: Array<any> = []
+          const linear: Array<{
+            nodeId: string
+            title: string
+            content: string
+            choices: Array<{ targetNodeId: string; label: string | null }>
+          }> = []
           const visited = new Set<string>()
           const start = store.narratives[narrativeId].startNodeId
           const queue: string[] = start ? [start] : nodes.map((n) => n.id)
@@ -350,7 +401,10 @@ export function initMcpBridge(): (() => void) | undefined {
               nodeId: nid,
               title: node.title,
               content: node.content,
-              choices: outgoing.map((o) => ({ targetNodeId: o.targetNodeId, label: o.label ?? null }))
+              choices: outgoing.map((o) => ({
+                targetNodeId: o.targetNodeId,
+                label: o.label ?? null
+              }))
             })
             for (const o of outgoing) {
               if (!visited.has(o.targetNodeId)) queue.push(o.targetNodeId)

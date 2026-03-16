@@ -57,12 +57,13 @@ export async function startMcpServer(): Promise<McpStartResult | McpErrorResult>
 
   const app = express()
 
-  app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  }))
-
+  app.use(
+    cors({
+      origin: '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization']
+    })
+  )
 
   app.get('/sse', async (_req, res) => {
     const transport = new SSEServerTransport('/messages', res)
@@ -70,7 +71,7 @@ export async function startMcpServer(): Promise<McpStartResult | McpErrorResult>
     res.on('close', () => {
       activeTransports.delete(transport.sessionId)
     })
-    if(mcpServer?.isConnected()) {
+    if (mcpServer?.isConnected()) {
       await transport.close()
       await mcpServer.close()
     }
@@ -112,7 +113,11 @@ export async function startMcpServer(): Promise<McpStartResult | McpErrorResult>
 export async function stopMcpServer(): Promise<McpStopResult> {
   // Close all active SSE transports
   for (const transport of activeTransports.values()) {
-    try { await transport.close() } catch { /* ignore */ }
+    try {
+      await transport.close()
+    } catch {
+      /* ignore */
+    }
   }
   activeTransports.clear()
 

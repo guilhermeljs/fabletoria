@@ -11,8 +11,12 @@ export default function InspectorPanel() {
   const singleSelectedNodeId = useUIStore((s) => s.singleSelectedNodeId)
   const singleSelectedVariationId = useUIStore((s) => s.singleSelectedVariationId)
 
-  const storyNode = useProjectStore((s) => (singleSelectedNodeId ? s.nodes[singleSelectedNodeId] : null))
-  const variation = useProjectStore((s) => (singleSelectedVariationId ? s.variations[singleSelectedVariationId] : null))
+  const storyNode = useProjectStore((s) =>
+    singleSelectedNodeId ? s.nodes[singleSelectedNodeId] : null
+  )
+  const variation = useProjectStore((s) =>
+    singleSelectedVariationId ? s.variations[singleSelectedVariationId] : null
+  )
   const updateNodeTitle = useProjectStore((s) => s.updateNodeTitle)
   const updateNodeContent = useProjectStore((s) => s.updateNodeContent)
   const updateVariationDefaultContent = useProjectStore((s) => s.updateVariationDefaultContent)
@@ -23,7 +27,7 @@ export default function InspectorPanel() {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-tk-3 p-tk-6 text-center text-text-dim">
         <BaseIcon name="Copy" size={32} className="opacity-50" />
-        <BaseText size='sm' variant="dim">
+        <BaseText size="sm" variant="dim">
           {selection.length} objects selected
         </BaseText>
         <BaseText size="xs" variant="dim">
@@ -37,13 +41,15 @@ export default function InspectorPanel() {
   if (singleSelectedVariationId && !singleSelectedNodeId) {
     return (
       <div className="flex flex-col gap-tk-6 p-tk-4 h-full overflow-y-auto">
-        <BaseText size="xs" weight="semibold" variant="dim" className="uppercase tracking-wider">Variation Defaults</BaseText>
+        <BaseText size="xs" weight="semibold" variant="dim" className="uppercase tracking-wider">
+          Variation Defaults
+        </BaseText>
 
         <BaseInput
           label="Default Title"
           value={variation?.defaultTitle ?? ''}
           onChange={(e) => updateVariationDefaultTitle(singleSelectedVariationId, e.target.value)}
-          size='sm'
+          size="sm"
           placeholder="Default node title..."
         />
 
@@ -63,7 +69,7 @@ export default function InspectorPanel() {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-tk-3 p-tk-6 text-center text-text-dim">
         <BaseIcon name="MousePointerSquareDashed" size={32} className="opacity-50" />
-        <BaseText size="sm" variant='dim'>
+        <BaseText size="sm" variant="dim">
           Select a node to edit its content
         </BaseText>
         <BaseText size="xs" variant="dim">
@@ -76,7 +82,9 @@ export default function InspectorPanel() {
   // Single node selected
   return (
     <div className="flex flex-col gap-tk-6 p-tk-4 h-full overflow-y-auto">
-      <BaseText size="xs" weight="semibold" variant="dim" className="uppercase tracking-wider">Story Piece</BaseText>
+      <BaseText size="xs" weight="semibold" variant="dim" className="uppercase tracking-wider">
+        Story Piece
+      </BaseText>
 
       <BaseInput
         label="Title"
@@ -84,7 +92,7 @@ export default function InspectorPanel() {
         onChange={(e) => updateNodeTitle(singleSelectedNodeId, e.target.value)}
         placeholder="Node title..."
         disabled={!!storyNode.variationId}
-        size='sm'
+        size="sm"
       />
 
       <TiptapEditor

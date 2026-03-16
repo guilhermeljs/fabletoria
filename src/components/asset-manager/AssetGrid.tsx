@@ -38,13 +38,14 @@ export default function AssetGrid({
   }, [folders, assets])
 
   const rows = useMemo(() => {
-    const result: typeof items[number][][] = []
+    const result: (typeof items)[number][][] = []
     for (let i = 0; i < items.length; i += COLUMNS) {
       result.push(items.slice(i, i + COLUMNS))
     }
     return result
   }, [items])
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,

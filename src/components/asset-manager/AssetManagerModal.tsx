@@ -38,50 +38,56 @@ export default function AssetManagerModal({ mode = 'browse', onClose, onSelect }
     : allAssets.filter((a) => a.folder === activeFolder)
 
   const allFolderPaths = Array.from(new Set(allAssets.map((a) => a.folder))).sort()
-  const folders = activeFolder === '/'
-    ? allFolderPaths.filter((f) => f !== '/' && !f.slice(1).includes('/'))
-    : (() => {
-        const prefix = activeFolder + '/'
-        return allFolderPaths.filter((f) => f.startsWith(prefix) && !f.slice(prefix.length).includes('/'))
-      })()
+  const folders =
+    activeFolder === '/'
+      ? allFolderPaths.filter((f) => f !== '/' && !f.slice(1).includes('/'))
+      : (() => {
+          const prefix = activeFolder + '/'
+          return allFolderPaths.filter(
+            (f) => f.startsWith(prefix) && !f.slice(prefix.length).includes('/')
+          )
+        })()
 
-  const handleItemClick = useCallback((id: string, e: React.MouseEvent) => {
-    if (mode === 'select') {
-      setDetailAsset(assets[id] ?? null)
-      return
-    }
-
-    const assetList = visibleAssets.map((a) => a.id)
-
-    if (e.shiftKey && lastClickedId) {
-      const lastIdx = assetList.indexOf(lastClickedId)
-      const thisIdx = assetList.indexOf(id)
-      if (lastIdx !== -1 && thisIdx !== -1) {
-        const [from, to] = lastIdx < thisIdx ? [lastIdx, thisIdx] : [thisIdx, lastIdx]
-        const rangeIds = assetList.slice(from, to + 1)
-        setSelectedIds((prev) => {
-          const next = new Set(prev)
-          rangeIds.forEach((rid) => next.add(rid))
-          return next
-        })
+  const handleItemClick = useCallback(
+    (id: string, e: React.MouseEvent) => {
+      if (mode === 'select') {
+        setDetailAsset(assets[id] ?? null)
         return
       }
-    }
 
-    if (e.ctrlKey || e.metaKey) {
-      setSelectedIds((prev) => {
-        const next = new Set(prev)
-        if (next.has(id)) next.delete(id)
-        else next.add(id)
-        return next
-      })
+      const assetList = visibleAssets.map((a) => a.id)
+
+      if (e.shiftKey && lastClickedId) {
+        const lastIdx = assetList.indexOf(lastClickedId)
+        const thisIdx = assetList.indexOf(id)
+        if (lastIdx !== -1 && thisIdx !== -1) {
+          const [from, to] = lastIdx < thisIdx ? [lastIdx, thisIdx] : [thisIdx, lastIdx]
+          const rangeIds = assetList.slice(from, to + 1)
+          setSelectedIds((prev) => {
+            const next = new Set(prev)
+            rangeIds.forEach((rid) => next.add(rid))
+            return next
+          })
+          return
+        }
+      }
+
+      if (e.ctrlKey || e.metaKey) {
+        setSelectedIds((prev) => {
+          const next = new Set(prev)
+          if (next.has(id)) next.delete(id)
+          else next.add(id)
+          return next
+        })
+        setLastClickedId(id)
+        return
+      }
+
+      setSelectedIds(new Set([id]))
       setLastClickedId(id)
-      return
-    }
-
-    setSelectedIds(new Set([id]))
-    setLastClickedId(id)
-  }, [mode, assets, visibleAssets, lastClickedId])
+    },
+    [mode, assets, visibleAssets, lastClickedId]
+  )
 
   const handleFolderClick = (path: string) => {
     setActiveFolder(path)
@@ -136,7 +142,13 @@ export default function AssetManagerModal({ mode = 'browse', onClose, onSelect }
         <div className="flex-1 mx-tk-4">
           <AssetSearchBar value={searchQuery} onChange={setSearchQuery} />
         </div>
-        <BaseButton variant="ghost" rounded size="sm" onClick={onClose} className="min-w-0 p-tk-1 mr-tk-2">
+        <BaseButton
+          variant="ghost"
+          rounded
+          size="sm"
+          onClick={onClose}
+          className="min-w-0 p-tk-1 mr-tk-2"
+        >
           <BaseIcon name="X" size={18} />
         </BaseButton>
       </div>

@@ -3,7 +3,9 @@ import { useMcpStore } from '../stores/mcp-store'
 interface ElectronAPIWithMcp {
   isElectron: boolean
   mcp: {
-    start: () => Promise<{ ok: true; port: number; url: string } | { ok: false; error: string; message: string }>
+    start: () => Promise<
+      { ok: true; port: number; url: string } | { ok: false; error: string; message: string }
+    >
     stop: () => Promise<{ ok: true }>
     status: () => Promise<{ running: boolean; port: number | null; url: string | null }>
   }

@@ -16,7 +16,9 @@ import { BaseVerticalSeparator } from '../primitives/BaseVerticalSeparator'
 
 export default function Toolbar() {
   const activeNarrativeId = useUIStore((s) => s.activeNarrativeId)
-  const narrative = useProjectStore((s) => (activeNarrativeId ? s.narratives[activeNarrativeId] : null))
+  const narrative = useProjectStore((s) =>
+    activeNarrativeId ? s.narratives[activeNarrativeId] : null
+  )
   const playStart = usePlayStore((s) => s.start)
   const modalStore = useModalStore()
   const realtimeMode = useRealtimeStore((s) => s.mode)

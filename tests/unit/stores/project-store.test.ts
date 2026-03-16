@@ -78,7 +78,10 @@ describe('Node actions', () => {
   it('updates node content', () => {
     const n = useProjectStore.getState().createNarrative('Test')
     const node = useProjectStore.getState().createNode(n.id)
-    const newContent = JSON.stringify({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello' }] }] })
+    const newContent = JSON.stringify({
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello' }] }]
+    })
     useProjectStore.getState().updateNodeContent(node.id, newContent)
     expect(useProjectStore.getState().nodes[node.id]?.content).toBe(newContent)
   })
@@ -121,12 +124,9 @@ describe('Connection actions', () => {
     const node1 = useProjectStore.getState().createNode(n.id)
     const node2 = useProjectStore.getState().createNode(n.id)
     // supply handles for both ends
-    const connection = useProjectStore.getState().createConnection(
-      node1.id,
-      node2.id,
-      'bottom',
-      'top'
-    )
+    const connection = useProjectStore
+      .getState()
+      .createConnection(node1.id, node2.id, 'bottom', 'top')
     expect(connection).not.toBeNull()
     expect(connection?.sourceNodeId).toBe(node1.id)
     expect(connection?.targetNodeId).toBe(node2.id)

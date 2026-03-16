@@ -29,7 +29,10 @@ export default function ComponentTree() {
   const openMenu = useContextMenuStore((s) => s.open)
 
   const [expandedComponents, setExpandedComponents] = useState<Set<EntityId>>(new Set())
-  const [editingId, setEditingId] = useState<{ type: 'component' | 'variation'; id: EntityId } | null>(null)
+  const [editingId, setEditingId] = useState<{
+    type: 'component' | 'variation'
+    id: EntityId
+  } | null>(null)
   const [editValue, setEditValue] = useState('')
   const [editError, setEditError] = useState('')
 
@@ -87,8 +90,8 @@ export default function ComponentTree() {
     while (Object.values(variations).some((v) => v?.name === name)) {
       name = `New Variation ${counter++}`
     }
-    const title = components[componentId]?.defaults["title"] ?? ""
-    const content = components[componentId]?.defaults["content"] ?? ""
+    const title = components[componentId]?.defaults['title'] ?? ''
+    const content = components[componentId]?.defaults['content'] ?? ''
 
     const result = createVariation(componentId, name, {}, content, title)
     if ('variation' in result) {
@@ -98,7 +101,9 @@ export default function ComponentTree() {
     }
   }
 
-  const sortedComponents = Object.values(components).filter(Boolean).sort((a, b) => (a?.createdAt ?? 0) - (b?.createdAt ?? 0)) as Component[]
+  const sortedComponents = Object.values(components)
+    .filter(Boolean)
+    .sort((a, b) => (a?.createdAt ?? 0) - (b?.createdAt ?? 0)) as Component[]
 
   return (
     <div>
@@ -109,13 +114,15 @@ export default function ComponentTree() {
         <BaseButton
           variant="ghost"
           size="sm"
-          onClick={() => modalStore.openModal('ComponentSchema', {
-            onSave: (name, schema, defaults) => {
-              const c = createComponent(name, { schema, defaults })
-              setExpandedComponents((prev) => new Set([...prev, c.id]))
-              modalStore.closeModal()
-            }
-          })}
+          onClick={() =>
+            modalStore.openModal('ComponentSchema', {
+              onSave: (name, schema, defaults) => {
+                const c = createComponent(name, { schema, defaults })
+                setExpandedComponents((prev) => new Set([...prev, c.id]))
+                modalStore.closeModal()
+              }
+            })
+          }
           title="New component"
         >
           <BaseIcon name="Plus" size={16} />
@@ -126,7 +133,7 @@ export default function ComponentTree() {
         {sortedComponents.map((component) => {
           const componentVariations = Object.values(variations)
             .filter((v) => v?.componentId === component.id)
-            .filter(Boolean) as typeof variations[string][]
+            .filter(Boolean) as (typeof variations)[string][]
 
           const isExpanded = expandedComponents.has(component.id)
 
@@ -151,7 +158,7 @@ export default function ComponentTree() {
                       onClick: () => {
                         const c = components[component.id]
                         if (c) startEditComponent(c)
-                      },
+                      }
                     },
                     {
                       label: 'Edit Schema',
@@ -166,10 +173,10 @@ export default function ComponentTree() {
                               updateComponentSchema(c.id, schema)
                               updateComponentDefaults(c.id, defaults)
                               modalStore.closeModal()
-                            },
+                            }
                           })
                         }
-                      },
+                      }
                     },
                     { type: 'separator' },
                     {
@@ -179,12 +186,13 @@ export default function ComponentTree() {
                       onClick: () => {
                         modalStore.openModal('Confirm', {
                           title: 'Delete Component',
-                          message: 'Are you sure you want to delete this component and all its variations? This action cannot be undone.',
+                          message:
+                            'Are you sure you want to delete this component and all its variations? This action cannot be undone.',
                           confirmLabel: 'Delete Component',
-                          onConfirm: () => deleteComponent(component.id),
+                          onConfirm: () => deleteComponent(component.id)
                         })
-                      },
-                    },
+                      }
+                    }
                   ])
                 }}
                 onAddVariation={() => handleAddVariation(component.id)}
@@ -194,57 +202,68 @@ export default function ComponentTree() {
               {/* Variations */}
               {isExpanded && (
                 <ul>
-                  {(componentVariations as NonNullable<typeof variations[string]>[]).map((variation) => (
-                    <VariationListItem
-                      key={variation.id}
-                      variation={variation}
-                      isSelected={selectedVariationId === variation.id}
-                      isEditing={editingId?.type === 'variation' && editingId.id === variation.id}
-                      editValue={editValue}
-                      editError={editError}
-                      onEditValueChange={(v) => { setEditValue(v); setEditError(''); }}
-                      onSelect={() => handleSelectVariation(variation.id)}
-                      onStartEdit={() => {
-                        setEditingId({ type: 'variation', id: variation.id });
-                        setEditValue(variation.name);
-                        setEditError('');
-                      }}
-                      onCommitEdit={commitEdit}
-                      onCancelEdit={() => { setEditingId(null); setEditError(''); }}
-                      onContextMenu={(e) => {
-                        e.preventDefault()
-                        openMenu(e.clientX, e.clientY, [
-                          {
-                            label: 'Rename',
-                            icon: 'Pencil',
-                            onClick: () => {
-                              setEditingId({ type: 'variation', id: variation.id })
-                              setEditValue(variation.name)
-                              setEditError('')
+                  {(componentVariations as NonNullable<(typeof variations)[string]>[]).map(
+                    (variation) => (
+                      <VariationListItem
+                        key={variation.id}
+                        variation={variation}
+                        isSelected={selectedVariationId === variation.id}
+                        isEditing={editingId?.type === 'variation' && editingId.id === variation.id}
+                        editValue={editValue}
+                        editError={editError}
+                        onEditValueChange={(v) => {
+                          setEditValue(v)
+                          setEditError('')
+                        }}
+                        onSelect={() => handleSelectVariation(variation.id)}
+                        onStartEdit={() => {
+                          setEditingId({ type: 'variation', id: variation.id })
+                          setEditValue(variation.name)
+                          setEditError('')
+                        }}
+                        onCommitEdit={commitEdit}
+                        onCancelEdit={() => {
+                          setEditingId(null)
+                          setEditError('')
+                        }}
+                        onContextMenu={(e) => {
+                          e.preventDefault()
+                          openMenu(e.clientX, e.clientY, [
+                            {
+                              label: 'Rename',
+                              icon: 'Pencil',
+                              onClick: () => {
+                                setEditingId({ type: 'variation', id: variation.id })
+                                setEditValue(variation.name)
+                                setEditError('')
+                              }
                             },
-                          },
-                          { type: 'separator' },
-                          {
-                            label: 'Delete',
-                            icon: 'Trash2',
-                            variant: 'danger',
-                            onClick: () => {
-                              modalStore.openModal('Confirm', {
-                                title: 'Delete Variation',
-                                message: 'Are you sure you want to delete this variation? This action cannot be undone.',
-                                confirmLabel: 'Delete Variation',
-                                onConfirm: () => deleteVariation(variation.id),
-                              })
-                            },
-                          },
-                        ])
-                      }}
-                      inputRef={inputRef as React.RefObject<HTMLInputElement>}
-                    />
-                  ))}
+                            { type: 'separator' },
+                            {
+                              label: 'Delete',
+                              icon: 'Trash2',
+                              variant: 'danger',
+                              onClick: () => {
+                                modalStore.openModal('Confirm', {
+                                  title: 'Delete Variation',
+                                  message:
+                                    'Are you sure you want to delete this variation? This action cannot be undone.',
+                                  confirmLabel: 'Delete Variation',
+                                  onConfirm: () => deleteVariation(variation.id)
+                                })
+                              }
+                            }
+                          ])
+                        }}
+                        inputRef={inputRef as React.RefObject<HTMLInputElement>}
+                      />
+                    )
+                  )}
                   {componentVariations.length === 0 && (
                     <li className="pl-tk-8 pr-tk-3 py-tk-1">
-                      <BaseText size="xs" variant="dim" italic>No variations yet</BaseText>
+                      <BaseText size="xs" variant="dim" italic>
+                        No variations yet
+                      </BaseText>
                     </li>
                   )}
                 </ul>
@@ -254,7 +273,9 @@ export default function ComponentTree() {
         })}
         {sortedComponents.length === 0 && (
           <li className="px-tk-3 py-tk-3">
-            <BaseText size="xs" variant="dim" italic>No components yet</BaseText>
+            <BaseText size="xs" variant="dim" italic>
+              No components yet
+            </BaseText>
           </li>
         )}
       </ul>

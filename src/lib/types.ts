@@ -40,7 +40,7 @@ export interface Connection {
   sourceHandle?: string | null
   /** Handle id used on the target node when the edge was created */
   targetHandle?: string | null
-  label?: string | null  // Choice label for Play Mode (Feature 002)
+  label?: string | null // Choice label for Play Mode (Feature 002)
   createdAt: number
   updatedAt: number
 }
@@ -68,9 +68,9 @@ export interface Component {
 
 export interface Variation {
   id: EntityId
-  componentId: EntityId,
-  defaultContent: string,
-  defaultTitle: string,
+  componentId: EntityId
+  defaultContent: string
+  defaultTitle: string
   /** Project-wide unique name */
   name: string
   values: Record<string, string | number>

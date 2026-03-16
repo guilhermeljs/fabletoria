@@ -5,20 +5,39 @@ import type { Asset, AssetMap } from '../lib/types'
 import { useProjectStore } from './project-store'
 
 const ACCEPTED_EXTENSIONS = new Set([
-  'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg',
-  'pdf', 'txt', 'md'
+  'jpg',
+  'jpeg',
+  'png',
+  'gif',
+  'webp',
+  'svg',
+  'pdf',
+  'txt',
+  'md'
 ])
 
 const EXTENSION_TO_TYPE: Record<string, Asset['type']> = {
-  jpg: 'image', jpeg: 'image', png: 'image', gif: 'image', webp: 'image', svg: 'image',
+  jpg: 'image',
+  jpeg: 'image',
+  png: 'image',
+  gif: 'image',
+  webp: 'image',
+  svg: 'image',
   pdf: 'document',
-  txt: 'text', md: 'text'
+  txt: 'text',
+  md: 'text'
 }
 
 const EXTENSION_TO_MIME: Record<string, string> = {
-  jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
-  webp: 'image/webp', svg: 'image/svg+xml', pdf: 'application/pdf',
-  txt: 'text/plain', md: 'text/markdown'
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
+  pdf: 'application/pdf',
+  txt: 'text/plain',
+  md: 'text/markdown'
 }
 
 function deriveExtension(file: File): string {
@@ -213,14 +232,23 @@ export const useAssetStore = create<AssetStore>()((set, get) => ({
     set((s) => {
       const asset = s.assets[id]
       if (!asset) return s
-      const updated: Asset = { ...asset, data, status: 'ready', uploadProgress: 100, updatedAt: Date.now() }
+      const updated: Asset = {
+        ...asset,
+        data,
+        status: 'ready',
+        uploadProgress: 100,
+        updatedAt: Date.now()
+      }
       db.assets.put(updated)
       return { assets: { ...s.assets, [id]: updated } }
     })
   }
 }))
 
-function removeAssetReferences(node: Record<string, unknown>, assetId: string): Record<string, unknown> {
+function removeAssetReferences(
+  node: Record<string, unknown>,
+  assetId: string
+): Record<string, unknown> {
   if (node.type === 'assetImage' || node.type === 'assetFile') {
     const attrs = node.attrs as Record<string, unknown> | undefined
     if (attrs?.assetId === assetId) {

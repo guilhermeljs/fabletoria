@@ -10,12 +10,7 @@ export const ContextMenuContainer: React.FC = () => {
 
   return (
     <ContextMenuPortal>
-      <BaseContextMenu
-        x={active.x}
-        y={active.y}
-        items={active.items}
-        onClose={close}
-      />
+      <BaseContextMenu x={active.x} y={active.y} items={active.items} onClose={close} />
     </ContextMenuPortal>
   )
 }

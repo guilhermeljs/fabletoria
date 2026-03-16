@@ -18,7 +18,14 @@ export default function VariationFieldEditor({ variationId }: VariationFieldEdit
   return (
     <div className="space-y-tk-4">
       <div className="flex items-center justify-between">
-        <BaseText size="xs" variant='dim' weight="medium" className="uppercase tracking-wider text-text-dim">{component.name}</BaseText>
+        <BaseText
+          size="xs"
+          variant="dim"
+          weight="medium"
+          className="uppercase tracking-wider text-text-dim"
+        >
+          {component.name}
+        </BaseText>
         <BaseBadge variant="primary">{variation.name}</BaseBadge>
       </div>
 

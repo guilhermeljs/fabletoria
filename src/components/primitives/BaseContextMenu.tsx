@@ -20,9 +20,10 @@ export const BaseContextMenu: React.FC<BaseContextMenuProps> = ({ x, y, items, o
     const { width, height } = el.getBoundingClientRect()
     const vw = window.innerWidth
     const vh = window.innerHeight
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPos({
       x: x + width > vw ? Math.max(0, x - width) : x,
-      y: y + height > vh ? Math.max(0, y - height) : y,
+      y: y + height > vh ? Math.max(0, y - height) : y
     })
   }, [x, y])
 
@@ -58,7 +59,10 @@ export const BaseContextMenu: React.FC<BaseContextMenuProps> = ({ x, y, items, o
         className="fixed inset-0 pointer-events-auto"
         onMouseDown={onClose}
         onTouchStart={onClose}
-        onContextMenu={(e) => { e.preventDefault(); onClose() }}
+        onContextMenu={(e) => {
+          e.preventDefault()
+          onClose()
+        }}
       />
 
       <div
@@ -78,15 +82,19 @@ export const BaseContextMenu: React.FC<BaseContextMenuProps> = ({ x, y, items, o
               key={i}
               disabled={item.disabled}
               onMouseDown={(e) => e.stopPropagation()}
-              onClick={() => { item.onClick(); onClose() }}
+              onClick={() => {
+                item.onClick()
+                onClose()
+              }}
               className={`
                 flex w-full items-center gap-tk-2 px-tk-2 py-tk-2 text-tk-sm
                 transition-colors duration-100
                 cursor-pointer
                 disabled:pointer-events-none disabled:opacity-40
-                ${isDanger
-                  ? 'text-status-error hover:bg-status-error/10'
-                  : 'text-text-main hover:bg-bg-header'
+                ${
+                  isDanger
+                    ? 'text-status-error hover:bg-status-error/10'
+                    : 'text-text-main hover:bg-bg-header'
                 }
               `.trim()}
             >

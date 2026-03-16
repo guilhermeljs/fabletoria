@@ -32,5 +32,5 @@ interface ContextMenuState {
 export const useContextMenuStore = create<ContextMenuState>((set) => ({
   active: null,
   open: (x, y, items) => set({ active: { x, y, items } }),
-  close: () => set({ active: null }),
+  close: () => set({ active: null })
 }))

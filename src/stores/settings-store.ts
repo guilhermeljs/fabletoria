@@ -40,8 +40,7 @@ export const useSettingsStore = create<SettingsState>()(
           dismissedFeedbackModalIds: [...(state.dismissedFeedbackModalIds ?? []), id]
         })),
 
-      hasDismissedFeedbackModalId: (id) =>
-        (get().dismissedFeedbackModalIds ?? []).includes(id),
+      hasDismissedFeedbackModalId: (id) => (get().dismissedFeedbackModalIds ?? []).includes(id),
 
       getFingerprint: () => {
         const existing = get().fingerprint

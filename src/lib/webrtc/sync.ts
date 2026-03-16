@@ -19,8 +19,7 @@ import type { ProjectSnapshot } from './types'
 // ── Snapshot helpers ──────────────────────────────────────────────────────────
 
 function extractSnapshot(): ProjectSnapshot {
-  const { narratives, nodes, connections, components, variations } =
-    useProjectStore.getState()
+  const { narratives, nodes, connections, components, variations } = useProjectStore.getState()
   return { narratives, nodes, connections, components, variations }
 }
 
@@ -31,7 +30,7 @@ function applySnapshot(snapshot: ProjectSnapshot): void {
       nodes: snapshot.nodes,
       connections: snapshot.connections,
       components: snapshot.components,
-      variations: snapshot.variations,
+      variations: snapshot.variations
     },
     false
   )
@@ -65,7 +64,7 @@ function makeDebounced(
         clearTimeout(timer)
         timer = null
       }
-    },
+    }
   }
 }
 
@@ -88,9 +87,7 @@ export function setupHostSync(
 ): () => void {
   const { broadcastToOthers, onCursor } = options
 
-  const debounced = makeDebounced((snapshot) =>
-    peer.send({ type: 'snapshot', payload: snapshot })
-  )
+  const debounced = makeDebounced((snapshot) => peer.send({ type: 'snapshot', payload: snapshot }))
 
   // Handle incoming messages from the client
   peer.onMessage = (msg) => {
@@ -138,9 +135,7 @@ export function setupClientSync(
 ): () => void {
   const { onCursor } = options ?? {}
 
-  const debounced = makeDebounced((snapshot) =>
-    peer.send({ type: 'snapshot', payload: snapshot })
-  )
+  const debounced = makeDebounced((snapshot) => peer.send({ type: 'snapshot', payload: snapshot }))
 
   // Handle incoming messages from the host
   peer.onMessage = (msg) => {

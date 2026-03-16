@@ -27,7 +27,7 @@ function getProbe(): HTMLDivElement {
       'overflow-wrap:break-word',
       'word-break:break-word',
       'white-space:pre-wrap',
-      'box-sizing:border-box',
+      'box-sizing:border-box'
     ].join(';')
 
     // narrative-content class ensures .narrative-content p, ul, etc. from
@@ -58,7 +58,7 @@ const SAFETY_MARGIN = 4
 export function measureNodeSize(
   contentHtml: string,
   maxWidth = 500,
-  minWidth = 160,
+  minWidth = 160
 ): { width: number; height: number } {
   // Empty nodes get a sensible minimum size
   const baseH = measureAt(contentHtml, maxWidth)

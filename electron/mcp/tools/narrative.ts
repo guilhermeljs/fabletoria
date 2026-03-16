@@ -4,7 +4,8 @@ import { ipcBridge } from '../ipc-bridge'
 
 registerTool({
   name: 'narrative.create',
-  description: 'Creates a new named narrative within the project. Returns the narrative ID for use in subsequent tool calls.',
+  description:
+    'Creates a new named narrative within the project. Returns the narrative ID for use in subsequent tool calls.',
   schema: {
     name: z.string().min(1).describe('Name for the new narrative. Must be non-empty.')
   },

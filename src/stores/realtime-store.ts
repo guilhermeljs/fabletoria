@@ -162,6 +162,7 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
       updateInvite(set, idx, 'disconnected')
       set((s) => {
         const { [idx]: _removed, ...rest } = s.clientCursors
+        void _removed
         return { clientCursors: rest as typeof s.clientCursors }
       })
     }

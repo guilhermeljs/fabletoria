@@ -18,12 +18,17 @@ export default function AssetFolderItem({ path, onClick, onDelete }: Props) {
       onClick={onClick}
     >
       <BaseIcon name="Folder" size={36} className="text-brand-primary mb-tk-2" />
-      <BaseText size="xs" variant="dim" className="truncate max-w-full px-2">{name}</BaseText>
+      <BaseText size="xs" variant="dim" className="truncate max-w-full px-2">
+        {name}
+      </BaseText>
 
       <BaseButton
         variant="ghost"
         size="sm"
-        onClick={(e) => { e.stopPropagation(); onDelete() }}
+        onClick={(e) => {
+          e.stopPropagation()
+          onDelete()
+        }}
         className="absolute top-1 right-1 text-text-dim hover:text-status-error opacity-0 group-hover:opacity-100 p-1 min-w-0 h-auto"
         title="Delete folder"
       >
