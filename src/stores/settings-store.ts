@@ -13,6 +13,7 @@ interface SettingsState extends Omit<AppSettings, 'id'> {
   hasDismissedFeedbackModalId: (id: string) => boolean
   resetToDefaults: () => void
   loadSettings: () => Promise<void>
+  getFingerprint: () => string
 }
 
 const DEFAULT_SETTINGS: Omit<AppSettings, 'id'> = {
@@ -42,14 +43,23 @@ export const useSettingsStore = create<SettingsState>()(
       hasDismissedFeedbackModalId: (id) =>
         (get().dismissedFeedbackModalIds ?? []).includes(id),
 
+      getFingerprint: () => {
+        const existing = get().fingerprint
+        if (existing) return existing
+        const generated = crypto.randomUUID()
+        set({ fingerprint: generated })
+        return generated
+      },
+
       resetToDefaults: () => set({ ...DEFAULT_SETTINGS }),
 
       loadSettings: async () => {
         const saved = await db.settings.get('global')
         if (saved) {
-          set({ ...saved, isLoading: false })
+          const fingerprint = saved.fingerprint ?? crypto.randomUUID()
+          set({ ...saved, fingerprint, isLoading: false })
         } else {
-          set({ ...DEFAULT_SETTINGS, isLoading: false })
+          set({ ...DEFAULT_SETTINGS, fingerprint: crypto.randomUUID(), isLoading: false })
         }
       }
     }),
@@ -69,7 +79,8 @@ export const useSettingsStore = create<SettingsState>()(
             organizeMaxWidth: state.organizeMaxWidth,
             organizeHGap: state.organizeHGap,
             organizeVGap: state.organizeVGap,
-            dismissedFeedbackModalIds: state.dismissedFeedbackModalIds ?? []
+            dismissedFeedbackModalIds: state.dismissedFeedbackModalIds ?? [],
+            fingerprint: state.fingerprint
           })
         },
         removeItem: async () => {

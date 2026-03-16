@@ -120,9 +120,7 @@ export default function App() {
     <PortalProvider>
       <MobileUnsupportedOverlay />
       <div className="flex flex-col h-screen bg-bg-main text-text-main overflow-hidden">
-        <FeedbackProvider
-          defaultOpen={true}
-        />
+        <FeedbackProvider/>
         <Toolbar />
 
         {storageWarning && (

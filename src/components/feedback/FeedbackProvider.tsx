@@ -1,6 +1,43 @@
-import React, { createContext, useContext, useMemo, useState } from 'react'
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { FeedbackModal } from './FeedbackModal'
+import type { FeedbackFieldConfig, FeedbackFieldError } from './FeedbackModal'
+
+const GENERAL_API = import.meta.env.VITE_GENERAL_API as string
+
+const VALID_FIELD_TYPES = new Set(['input', 'email', 'textarea', 'select'])
+
+interface FeedbackTemplate {
+  id: string
+  title: string
+  fields: FeedbackFieldConfig[]
+  description?: string
+}
+
+function isValidTemplate(t: unknown): t is FeedbackTemplate {
+  if (!t || typeof t !== 'object') return false
+  const obj = t as Record<string, unknown>
+  if (typeof obj.id !== 'string' || !obj.id) return false
+  if (typeof obj.title !== 'string' || !obj.title) return false
+  if (!Array.isArray(obj.fields) || obj.fields.length === 0) return false
+  return obj.fields.every((f: unknown) => {
+    if (!f || typeof f !== 'object') return false
+    const field = f as Record<string, unknown>
+    if (typeof field.name !== 'string' || !field.name) return false
+    if (typeof field.label !== 'string' || !field.label) return false
+    if (!VALID_FIELD_TYPES.has(field.type as string)) return false
+    if (field.type === 'select') {
+      if (!Array.isArray(field.options) || field.options.length === 0) return false
+      return field.options.every((o: unknown) => {
+        if (!o || typeof o !== 'object') return false
+        const opt = o as Record<string, unknown>
+        return (typeof opt.value === 'string' || typeof opt.value === 'number') &&
+               typeof opt.label === 'string'
+      })
+    }
+    return true
+  })
+}
 
 interface FeedbackContextValue {
   open: boolean
@@ -17,60 +54,113 @@ export const useFeedback = () => {
 }
 
 export interface FeedbackProviderProps {
-  defaultOpen?: boolean
-  modalId?: string
   children?: React.ReactNode
 }
 
-export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({
-  defaultOpen = false,
-  modalId = 'default-feedback',
-  children,
-}) => {
-  const [open, setOpen] = useState(defaultOpen)
-  const hasDismissed = useSettingsStore((s) => s.hasDismissedFeedbackModalId(modalId))
+export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({ children }) => {
+  const dismissedIds = useSettingsStore((s) => s.dismissedFeedbackModalIds ?? [])
+  const isLoading = useSettingsStore((s) => s.isLoading)
   const addDismissed = useSettingsStore((s) => s.addDismissedFeedbackModalId)
+  const getFingerprint = useSettingsStore((s) => s.getFingerprint)
 
-  React.useEffect(() => {
-    if (open && hasDismissed) {
-      setOpen(false)
+  const [templates, setTemplates] = useState<FeedbackTemplate[]>([])
+  const [manuallyClosed, setManuallyClosed] = useState(false)
+  const [submitErrors, setSubmitErrors] = useState<FeedbackFieldError[]>([])
+
+  useEffect(() => {
+    if (isLoading) return
+
+    const fetchFeedbacks = () =>
+      fetch(`${GENERAL_API}/feedbacks`, {
+        headers: { 'x-fingerprint': getFingerprint() },
+      })
+        .then((res) => res.json())
+        .then((data: unknown) => {
+          if (!Array.isArray(data)) return
+          const valid = data.filter(isValidTemplate)
+          if (valid.length > 0) setTemplates(valid)
+        })
+        .catch(() => {/* silently ignore fetch failures */})
+
+    fetchFeedbacks()
+    const interval = setInterval(fetchFeedbacks, 1 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [isLoading])
+
+  const pending = useMemo(
+    () => templates?.filter((t) => !dismissedIds.includes(t.id)),
+    [templates, dismissedIds],
+  )
+
+  const current = manuallyClosed ? null : (pending[0] ?? null)
+  const open = current !== null
+
+  const closeFeedback = () => setManuallyClosed(true)
+
+  const handleSubmit = async (values: Record<string, string | number>) => {
+    if (!current) return
+    setSubmitErrors([])
+
+    const res = await fetch(`${GENERAL_API}/feedback/answer/${current.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-fingerprint': getFingerprint() },
+      body: JSON.stringify(values),
+    })
+
+    if (res.status === 400) {
+      const body = await res.json().catch(() => ({}))
+      if (body.errors) {
+        setSubmitErrors(body.errors)
+      }
+      return
     }
-  }, [hasDismissed, open])
+
+    addDismissed(current.id)
+    setSubmitErrors([])
+
+    // If there are more pending after dismissing this one, keep open
+    const remaining = pending.filter((t) => t.id !== current.id)
+    if (remaining.length === 0) {
+      setManuallyClosed(true)
+    }
+  }
+
+  // Reset manuallyClosed when new pending items arrive (e.g. after templates load)
+  useEffect(() => {
+    if (pending.length > 0) setManuallyClosed(false)
+  }, [pending.length])
+
+  // Reset errors when current changes
+  useEffect(() => {
+    setSubmitErrors([])
+  }, [current?.id])
 
   const value = useMemo(
     () => ({
       open,
       openFeedback: () => {
-        if (hasDismissed) return
-        setOpen(true)
+        if (pending.length === 0) return
+        setManuallyClosed(false)
       },
-      closeFeedback: () => setOpen(false),
+      closeFeedback,
     }),
-    [hasDismissed, open],
+    [open, pending.length],
   )
 
   return (
     <FeedbackContext.Provider value={value}>
       {children}
-      <FeedbackModal
-        open={open}
-        title="We need your feedback"
-        description="There's something you felt off, any problem or any feature request?"
-        fields={[
-          {
-            name: 'feedback',
-            label: 'Feedback',
-            type: 'textarea',
-            placeholder: 'Tell us what you think...',
-            maxLength: 512
-          }
-        ]}
-        onClose={value.closeFeedback}
-        onSubmit={() => {
-          addDismissed(modalId)
-          value.closeFeedback()
-        }}
-      />
+      {current && (
+        <FeedbackModal
+          open={open}
+          title={current.title}
+          fields={current.fields}
+          description={current.description || ""}
+          errors={submitErrors}
+          onClose={closeFeedback}
+          onSubmit={handleSubmit}
+        />
+      )}
     </FeedbackContext.Provider>
   )
 }

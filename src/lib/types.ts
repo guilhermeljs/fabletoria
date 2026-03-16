@@ -116,4 +116,6 @@ export interface AppSettings {
   organizeVGap: number
   /** Feedback modals the user has already submitted */
   dismissedFeedbackModalIds?: string[]
+  /** Persistent anonymous identifier for this browser */
+  fingerprint?: string
 }
