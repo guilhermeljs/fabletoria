@@ -88,4 +88,4 @@ jobs:
             --body "Release branch: \`${{ steps.version.outputs.branch }}\`
             RC tag: \`${{ steps.version.outputs.rc_tag }}\`
             Started by: @${{ github.actor }}" \
-            --label "release"
+            --label "release" || true
