@@ -1,5 +1,6 @@
 appId: com.fabletoria.app
 productName: Fabletoria
+copyright: Copyright © 2025 Guilherme Luiz
 directories:
   buildResources: build
 files:
@@ -29,7 +30,7 @@ linux:
     - AppImage
     - snap
     - deb
-  maintainer: electronjs.org
+  maintainer: Guilherme Luiz <guilherme@fabletoria.com>
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
