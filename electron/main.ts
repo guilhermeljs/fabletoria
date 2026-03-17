@@ -72,8 +72,6 @@ app.whenReady().then(() => {
   }
 })
 
-
-
 app.on('before-quit', () => {
   stopOnQuit()
 })
