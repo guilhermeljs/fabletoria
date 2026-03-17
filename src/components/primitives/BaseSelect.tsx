@@ -28,7 +28,7 @@ export const BaseSelect = React.forwardRef<HTMLSelectElement, BaseSelectProps>(
     return (
       <div className="w-full">
         {label && (
-          <BaseText size="sm" weight="medium" className="text-text-main mb-tk-1.5 block">
+          <BaseText size="sm" weight="medium" className="text-text-main mb-tk-1 block">
             {label}
           </BaseText>
         )}
