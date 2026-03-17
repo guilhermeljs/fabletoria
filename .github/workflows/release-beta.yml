@@ -79,8 +79,6 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact: linux-artifacts
-          - os: macos-latest
-            artifact: macos-artifacts
           - os: windows-latest
             artifact: windows-artifacts
 
@@ -137,7 +135,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create ${{ needs.validate.outputs.beta_tag }} dist-release/* \
+          FILES=$(find dist-release -maxdepth 1 -type f ! -name "builder-*" ! -name "builder-effective-*" | sort)
+          gh release create ${{ needs.validate.outputs.beta_tag }} $FILES \
             --title "${{ needs.validate.outputs.beta_tag }}" \
             --generate-notes \
             --prerelease

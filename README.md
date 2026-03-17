@@ -50,7 +50,7 @@ Just open [fabletoria.com](https://fabletoria.com) in your browser — no instal
 
 Download the latest release for your platform from the [Releases page](https://github.com/guilhermeljs/fabletoria/releases).
 
-> The desktop app is available for **Windows**, **macOS**, and **Linux**.
+> The desktop app is available for **Windows** and **Linux**. macOS support is coming soon.
 
 #### Building from source
 
