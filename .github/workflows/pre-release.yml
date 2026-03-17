@@ -1,0 +1,91 @@
+name: Pre-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  pre-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install -g semver
+
+      - name: Validate no release in progress
+        run: |
+          EXISTING=$(git branch -r | grep 'origin/release/' || true)
+          if [[ -n "$EXISTING" ]]; then
+            echo "::error::A release branch is already open: $EXISTING"
+            exit 1
+          fi
+
+      - name: Calculate version
+        id: version
+        run: |
+          CURRENT=$(node -p "require('./package.json').version")
+          NEW=$(semver -i ${{ inputs.bump_type }} "$CURRENT")
+          echo "current=$CURRENT"    >> $GITHUB_OUTPUT
+          echo "new=$NEW"            >> $GITHUB_OUTPUT
+          echo "tag=v$NEW"           >> $GITHUB_OUTPUT
+          echo "rc_tag=v$NEW-rc.1"   >> $GITHUB_OUTPUT
+          echo "branch=release/$NEW" >> $GITHUB_OUTPUT
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create release branch and bump version
+        run: |
+          git checkout -b ${{ steps.version.outputs.branch }}
+          npm version ${{ steps.version.outputs.new }} --no-git-tag-version
+          git add package.json
+          git commit -m "chore: bump version to ${{ steps.version.outputs.new }}"
+          git push origin ${{ steps.version.outputs.branch }}
+
+      - name: Create RC tag
+        run: |
+          git tag ${{ steps.version.outputs.rc_tag }}
+          git push origin ${{ steps.version.outputs.rc_tag }}
+
+      - name: Create GitHub pre-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ steps.version.outputs.rc_tag }} \
+            --title "${{ steps.version.outputs.rc_tag }}" \
+            --prerelease \
+            --generate-notes
+
+      - name: Open code freeze issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "Code freeze -- release ${{ steps.version.outputs.new }} in progress" \
+            --body "Release branch: \`${{ steps.version.outputs.branch }}\`
+            RC tag: \`${{ steps.version.outputs.rc_tag }}\`
+            Started by: @${{ github.actor }}" \
+            --label "release"

@@ -4,6 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { startMcpServer, stopMcpServer, getMcpStatus, stopOnQuit } from './mcp/server'
 import './mcp/registry'
 import './mcp/ipc-bridge'
+import { autoUpdater } from 'electron-updater'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -43,10 +44,9 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // Feature 002 will register MCP-related IPC handlers here
   ipcMain.on('ping', () => console.log('pong'))
 
-  // MCP server IPC handlers (Feature 002)
+  // MCP server IPC handlers
   ipcMain.handle('mcp:start', async () => {
     return await startMcpServer()
   })
@@ -64,7 +64,15 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+
+  if (!is.dev) {
+    app.on('ready', () => {
+      autoUpdater.checkForUpdatesAndNotify()
+    })
+  }
 })
+
+
 
 app.on('before-quit', () => {
   stopOnQuit()

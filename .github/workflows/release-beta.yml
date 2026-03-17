@@ -1,0 +1,143 @@
+name: Release Beta
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type the exact version to confirm (e.g. 1.2.3)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.info.outputs.version }}
+      beta_tag: ${{ steps.info.outputs.beta_tag }}
+      branch:   ${{ steps.info.outputs.branch }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve release branch
+        id: info
+        run: |
+          BRANCH=$(git branch -r | grep 'origin/release/' | head -1 | sed 's|.*origin/||' | xargs)
+          if [[ -z "$BRANCH" ]]; then
+            echo "::error::No release/* branch found."
+            exit 1
+          fi
+          git checkout "$BRANCH"
+          VERSION=$(node -p "require('./package.json').version")
+
+          # Find next beta number for this version
+          LAST=$(git tag -l "v$VERSION-beta.*" | sort -V | tail -1)
+          if [[ -z "$LAST" ]]; then
+            N=1
+          else
+            N=$(echo "$LAST" | grep -o '[0-9]*$')
+            N=$((N + 1))
+          fi
+
+          echo "version=$VERSION"             >> $GITHUB_OUTPUT
+          echo "beta_tag=v$VERSION-beta.$N"   >> $GITHUB_OUTPUT
+          echo "branch=$BRANCH"               >> $GITHUB_OUTPUT
+
+      - name: Confirm version matches input
+        run: |
+          if [[ "${{ inputs.confirm }}" != "${{ steps.info.outputs.version }}" ]]; then
+            echo "::error::Expected ${{ steps.info.outputs.version }}, got ${{ inputs.confirm }}"
+            exit 1
+          fi
+
+      - name: Check CI is green on release branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CONCLUSION=$(gh run list \
+            --branch ${{ steps.info.outputs.branch }} \
+            --workflow ci.yml \
+            --limit 1 \
+            --json conclusion \
+            --jq '.[0].conclusion')
+          if [[ "$CONCLUSION" != "success" ]]; then
+            echo "::error::CI is not green on ${{ steps.info.outputs.branch }} (conclusion: $CONCLUSION)"
+            exit 1
+          fi
+
+  build:
+    needs: validate
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: linux-artifacts
+          - os: macos-latest
+            artifact: macos-artifacts
+          - os: windows-latest
+            artifact: windows-artifacts
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.branch }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build:electron
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    needs: [validate, build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.branch }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push beta tag
+        run: |
+          git tag -a ${{ needs.validate.outputs.beta_tag }} -m "Beta ${{ needs.validate.outputs.beta_tag }}"
+          git push origin ${{ needs.validate.outputs.beta_tag }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist-release
+          merge-multiple: true
+
+      - name: Create GitHub pre-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ needs.validate.outputs.beta_tag }} dist-release/* \
+            --title "${{ needs.validate.outputs.beta_tag }}" \
+            --generate-notes \
+            --prerelease

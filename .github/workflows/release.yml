@@ -1,0 +1,186 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type the exact version to confirm (e.g. 1.2.3)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.info.outputs.version }}
+      tag:     ${{ steps.info.outputs.tag }}
+      branch:  ${{ steps.info.outputs.branch }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve release branch
+        id: info
+        run: |
+          BRANCH=$(git branch -r | grep 'origin/release/' | head -1 | sed 's|.*origin/||' | xargs)
+          if [[ -z "$BRANCH" ]]; then
+            echo "::error::No release/* branch found."
+            exit 1
+          fi
+          git checkout "$BRANCH"
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION"       >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION"          >> $GITHUB_OUTPUT
+          echo "branch=$BRANCH"         >> $GITHUB_OUTPUT
+
+      - name: Confirm version matches input
+        run: |
+          if [[ "${{ inputs.confirm }}" != "${{ steps.info.outputs.version }}" ]]; then
+            echo "::error::Expected ${{ steps.info.outputs.version }}, got ${{ inputs.confirm }}"
+            exit 1
+          fi
+
+      - name: Check CI is green on release branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CONCLUSION=$(gh run list \
+            --branch ${{ steps.info.outputs.branch }} \
+            --workflow ci.yml \
+            --limit 1 \
+            --json conclusion \
+            --jq '.[0].conclusion')
+          if [[ "$CONCLUSION" != "success" ]]; then
+            echo "::error::CI is not green on ${{ steps.info.outputs.branch }} (conclusion: $CONCLUSION)"
+            exit 1
+          fi
+
+  build:
+    needs: validate
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: linux-artifacts
+          - os: macos-latest
+            artifact: macos-artifacts
+          - os: windows-latest
+            artifact: windows-artifacts
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.branch }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build:electron
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    needs: [validate, build]
+    runs-on: ubuntu-latest
+    outputs:
+      release_url: ${{ steps.release.outputs.url }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.branch }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        run: |
+          git tag -a ${{ needs.validate.outputs.tag }} -m "Release ${{ needs.validate.outputs.tag }}"
+          git push origin ${{ needs.validate.outputs.tag }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist-release
+          merge-multiple: true
+
+      - name: Create GitHub release
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          URL=$(gh release create ${{ needs.validate.outputs.tag }} dist-release/* \
+            --title "${{ needs.validate.outputs.tag }}" \
+            --generate-notes \
+            --latest)
+          echo "url=$URL" >> $GITHUB_OUTPUT
+
+  finalize:
+    needs: [validate, publish]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.branch }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install -g semver
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge into main and bump dev version
+        run: |
+          git fetch origin main
+          git checkout main
+          git merge --no-ff ${{ needs.validate.outputs.branch }} \
+            -m "chore: merge ${{ needs.validate.outputs.branch }} into main"
+          DEV=$(semver -i patch ${{ needs.validate.outputs.version }})-dev
+          npm version "$DEV" --no-git-tag-version
+          git add package.json
+          git commit -m "chore: bump version to $DEV [dev]"
+          git push origin main
+
+      - name: Delete release branch
+        run: git push origin --delete ${{ needs.validate.outputs.branch }}
+
+      - name: Close code freeze issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE=$(gh issue list --label "release" --state open --json number,title \
+            --jq ".[] | select(.title | contains(\"${{ needs.validate.outputs.version }}\")) | .number" \
+            | head -1)
+          if [[ -n "$ISSUE" ]]; then
+            gh issue close "$ISSUE" --comment "Released: ${{ needs.publish.outputs.release_url }}"
+          fi
