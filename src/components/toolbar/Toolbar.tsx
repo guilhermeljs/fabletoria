@@ -65,7 +65,7 @@ export default function Toolbar() {
         <BaseButton
           variant="secondary"
           size="sm"
-          onClick={() => window.open('https://github.com/fabletoria/narrativeflow', '_blank')}
+          onClick={() => window.open('https://github.com/guilhermeljs/fabletoria', '_blank')}
           title="Star us on GitHub"
         >
           <BaseIcon name="Github" size={14} />
