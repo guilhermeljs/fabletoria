@@ -88,7 +88,7 @@ export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({ children }) 
         })
 
     fetchFeedbacks()
-    const interval = setInterval(fetchFeedbacks, 1 * 60 * 1000)
+    const interval = setInterval(fetchFeedbacks, 15 * 60 * 1000)
     return () => clearInterval(interval)
   }, [isLoading, getFingerprint])
 
