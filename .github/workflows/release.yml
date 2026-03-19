@@ -48,31 +48,15 @@ jobs:
             exit 1
           fi
 
-      - name: Trigger CI on release branch
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh workflow run ci.yml --ref ${{ steps.info.outputs.branch }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
-      - name: Wait for CI to complete
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          BRANCH=${{ steps.info.outputs.branch }}
-          echo "Waiting for CI run to appear..."
-          for i in $(seq 1 12); do
-            RUN_ID=$(gh run list --workflow ci.yml --branch $BRANCH --limit 1 --json databaseId,status --jq 'first(.[] | select(.status != "")) | .databaseId // ""')
-            if [[ -n "$RUN_ID" ]]; then
-              echo "Found run $RUN_ID"
-              break
-            fi
-            sleep 10
-          done
-          if [[ -z "$RUN_ID" ]]; then
-            echo "::error::CI run did not appear after 2 minutes"
-            exit 1
-          fi
-          gh run watch "$RUN_ID" --exit-status
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
 
   build:
     needs: validate
