@@ -1,6 +1,6 @@
 {
   "name": "fabletoria",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Fabletoria is a free, open-source narrative design system",
   "main": "./out/main/main.js",
   "author": {
