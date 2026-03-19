@@ -4,23 +4,22 @@
 @import "@xyflow/react/dist/style.css";
 
 :root {
-  /* Frost Elegant Theme (Phase 1/5) */
-  --tk-color-bg-main: #020617;
-  --tk-color-bg-surface: #0f172a;
-  --tk-color-bg-header: #070c1b;
+  --tk-color-bg-main: #050506;
+  --tk-color-bg-surface: #121217;
+  --tk-color-bg-header: #08080a;
 
-  --tk-color-text-main: #edf0f3;
-  --tk-color-text-dim: #94a3b8;
+  --tk-color-text-main: #f2f2f2;
+  --tk-color-text-dim: #9f9f9b;
 
-  --tk-color-brand-primary: #51abd5;
-  --tk-color-brand-accent: #c084fc;
-  
-  --tk-color-status-success: #11ab99;
-  --tk-color-status-warning: #facc15;
-  --tk-color-status-error: #f43f5e;
-  --tk-color-status-info: #0ea5e9;
+  --tk-color-brand-primary: #ff2e63;
+  --tk-color-brand-accent: #00f5d4;
 
-  --tk-color-border: #1e293b;
+  --tk-color-status-success: #00d084;
+  --tk-color-status-warning: #ffb703;
+  --tk-color-status-error: #ff3b3b;
+  --tk-color-status-info: #3a86ff;
+
+  --tk-color-border: #1a1a1f;
 
   --tk-spacing-1: 6px;
   --tk-spacing-2: 10px;
