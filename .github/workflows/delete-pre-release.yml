@@ -1,0 +1,74 @@
+name: Delete Pre-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to delete (e.g. 1.2.3)'
+        required: true
+        type: string
+      confirm:
+        description: 'Type the version again to confirm'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate confirmation
+        run: |
+          if [[ "${{ inputs.version }}" != "${{ inputs.confirm }}" ]]; then
+            echo "::error::Confirmation does not match version"
+            exit 1
+          fi
+
+      - name: Validate branch exists
+        run: |
+          BRANCH="release/${{ inputs.version }}"
+          if ! git ls-remote --exit-code origin "refs/heads/$BRANCH" > /dev/null 2>&1; then
+            echo "::error::Branch $BRANCH does not exist"
+            exit 1
+          fi
+
+      - name: Delete release branch
+        run: |
+          git push origin --delete "release/${{ inputs.version }}"
+
+      - name: Delete RC tag and GitHub pre-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RC_TAG="v${{ inputs.version }}-rc.1"
+          if git ls-remote --exit-code origin "refs/tags/$RC_TAG" > /dev/null 2>&1; then
+            gh release delete "$RC_TAG" --yes --cleanup-tag || true
+          else
+            echo "Tag $RC_TAG not found, skipping"
+          fi
+
+      - name: Close code freeze issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE=$(gh issue list \
+            --label "release" \
+            --state open \
+            --search "Code freeze -- release ${{ inputs.version }}" \
+            --json number \
+            --jq '.[0].number')
+          if [[ -n "$ISSUE" && "$ISSUE" != "null" ]]; then
+            gh issue close "$ISSUE" \
+              --comment "Pre-release ${{ inputs.version }} was deleted by @${{ github.actor }}."
+          else
+            echo "No open code freeze issue found for ${{ inputs.version }}, skipping"
+          fi
