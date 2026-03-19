@@ -20,9 +20,23 @@ export interface StoryNodeData {
   [key: string]: unknown
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function sanitizeNode(node: any): any {
+  if (!node || typeof node !== 'object') return null
+  if (node.type === 'text') {
+    if (typeof node.text !== 'string' || node.text === '') return null
+    return node
+  }
+  if (Array.isArray(node.content)) {
+    return { ...node, content: node.content.map(sanitizeNode).filter(Boolean) }
+  }
+  return node
+}
+
 function parseContent(raw: string): object {
   try {
-    return JSON.parse(raw) as object
+    const parsed = JSON.parse(raw)
+    return sanitizeNode(parsed) ?? { type: 'doc', content: [{ type: 'paragraph' }] }
   } catch {
     return { type: 'doc', content: [{ type: 'paragraph' }] }
   }
@@ -154,7 +168,11 @@ const StoryNodeComponent = memo(({ data, selected, id, width, height }: NodeProp
     const { html: resolved } = resolveContent(parsed, variations, variation?.values, assets)
     html = resolved
   } catch {
-    html = generateHTML(parseContent(nodeData.content), EXTENSIONS)
+    try {
+      html = generateHTML(parseContent(nodeData.content), EXTENSIONS)
+    } catch {
+      html = ''
+    }
   }
 
   const displayTitle = resolveTitle(nodeData.title ?? '', variation?.values)
