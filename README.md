@@ -30,6 +30,8 @@ No account required. No subscription. No hidden limits. Export anywhere you want
 
 ## Features
 
+![Fabletoria demo](demo.png)
+
 - 🎭 **Narrative Studio** — Visual canvas to design branching stories with nodes and choices
 - ▶️ **Built-in Player** — Play your narrative directly inside Fabletoria, no export needed
 - 👥 **Real-time Collaboration** — Work with your team simultaneously via WebRTC *(beta)*
